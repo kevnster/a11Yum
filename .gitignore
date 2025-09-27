@@ -117,3 +117,7 @@ temp/
 *.njsproj
 *.sln
 *.sw?
+
+# Large image files (keep local but don't push)
+frontend/assets/logo.png
+frontend/assets/logo_notext.png

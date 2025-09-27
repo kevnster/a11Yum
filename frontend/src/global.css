@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom CSS variables for your brand colors */
+:root {
+  /* Primary Brand Colors (from your logo) */
+  --color-primary-orange: #FF8C42;
+  --color-primary-light-orange: #FFB366;
+  --color-primary-green: #8BC34A;
+  --color-primary-dark-green: #689F38;
+  --color-primary-coral: #FF6B35;
+  --color-primary-teal: #26A69A;
+
+  /* Neutral Colors */
+  --color-neutral-white: #FFFFFF;
+  --color-neutral-light-gray: #F8F9FA;
+  --color-neutral-medium-gray: #E0E0E0;
+  --color-neutral-dark-gray: #666666;
+  --color-neutral-charcoal: #333333;
+  --color-neutral-black: #000000;
+
+  /* Semantic Colors */
+  --color-semantic-success: #8BC34A;
+  --color-semantic-warning: #FF8C42;
+  --color-semantic-error: #FF6B35;
+  --color-semantic-info: #26A69A;
+
+  /* Accessibility Colors */
+  --color-accessibility-focus: #FF8C42;
+  --color-accessibility-selection: rgba(139, 195, 74, 0.2);
+  --color-accessibility-highlight: rgba(255, 179, 102, 0.12);
+}
+
+/* Dark mode variables */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-neutral-white: #1A1A1A;
+    --color-neutral-light-gray: #2A2A2A;
+    --color-neutral-medium-gray: #404040;
+    --color-neutral-dark-gray: #CCCCCC;
+    --color-neutral-charcoal: #FFFFFF;
+    --color-neutral-black: #FFFFFF;
+  }
+}
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom utility classes */
+.text-brand-orange {
+  color: var(--color-primary-orange);
+}
+
+.text-brand-green {
+  color: var(--color-primary-green);
+}
+
+.bg-brand-orange {
+  background-color: var(--color-primary-orange);
+}
+
+.bg-brand-green {
+  background-color: var(--color-primary-green);
+}
+
+.border-brand-orange {
+  border-color: var(--color-primary-orange);
+}
+
+.border-brand-green {
+  border-color: var(--color-primary-green);
+}
+
+/* Accessibility improvements */
+.focus-visible:focus {
+  outline: 2px solid var(--color-accessibility-focus);
+  outline-offset: 2px;
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
