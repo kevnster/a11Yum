@@ -69,7 +69,7 @@ const HomeScreen: React.FC = () => {
   const handleCreateRecipe = () => {
     showModal(
       'Create Recipe',
-      'Recipe generation coming soon! This will take you to an AI-powered recipe creator.'
+      'Generate a curated, accessibility-friendly version of a recipe.'
     );
   };
 
