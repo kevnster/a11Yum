@@ -6,8 +6,9 @@ import {
   ScrollView,
   TouchableOpacity,
   Animated,
-  Alert,
+  Modal,
   Image,
+  Platform,
 } from 'react-native';
 import { useAuth0 } from 'react-native-auth0';
 import { UserStorage } from '../utils/UserStorage';
@@ -29,6 +30,7 @@ interface WelcomeOnboardingProps {
 const WelcomeOnboarding: React.FC<WelcomeOnboardingProps> = ({ onComplete }) => {
   const { user } = useAuth0();
   const [currentStep, setCurrentStep] = useState(1);
+  const [modalVisible, setModalVisible] = useState(false);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     dietaryNeeds: [],
     cookingPreferences: [],
@@ -39,6 +41,10 @@ const WelcomeOnboarding: React.FC<WelcomeOnboardingProps> = ({ onComplete }) => 
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
+
+  // Animated modal entry/exit
+  const modalScale = useRef(new Animated.Value(0.8)).current;
+  const modalOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -54,6 +60,33 @@ const WelcomeOnboarding: React.FC<WelcomeOnboardingProps> = ({ onComplete }) => 
       }),
     ]).start();
   }, [currentStep]);
+
+  useEffect(() => {
+    if (modalVisible) {
+      modalScale.setValue(0.8);
+      modalOpacity.setValue(0);
+      Animated.parallel([
+        Animated.spring(modalScale, { toValue: 1, useNativeDriver: true, stiffness: 100 }),
+        Animated.timing(modalOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+      ]).start();
+    }
+  }, [modalVisible]);
+
+  const closeModal = (callComplete: boolean) => {
+    Animated.parallel([
+      Animated.timing(modalOpacity, { toValue: 0, duration: 180, useNativeDriver: true }),
+      Animated.timing(modalScale, { toValue: 0.92, duration: 180, useNativeDriver: true }),
+    ]).start(() => {
+      setModalVisible(false);
+      if (callComplete) onComplete();
+    });
+  };
+
+  // Platform helpers
+  const isWeb = Platform.OS === 'web';
+  const logoSource = isWeb
+    ? { uri: '/assets/logo-removebg-preview.png' } // ensure your web bundler serves this path
+    : require('../../assets/logo-removebg-preview.png');
 
   const dietaryOptions = [
     'Vegan', 'Vegetarian', 'Gluten-Free', 'Dairy-Free', 
@@ -115,11 +148,8 @@ const WelcomeOnboarding: React.FC<WelcomeOnboardingProps> = ({ onComplete }) => 
       UserStorage.saveUserProfile(userProfile);
       UserStorage.markProfileSetupCompleted();
       
-      Alert.alert(
-        'Welcome to a11Yum! 🎉',
-        'Your personalized recipe experience is ready. Let\'s start cooking!',
-        [{ text: 'Let\'s Cook!', onPress: onComplete }]
-      );
+      // Show modal for confirmation across platforms
+      setModalVisible(true);
     }
   };
 
@@ -328,7 +358,7 @@ const WelcomeOnboarding: React.FC<WelcomeOnboardingProps> = ({ onComplete }) => 
     <View style={styles.container}>
       <View style={styles.header}>
         <Image
-          source={require('../../assets/logo-removebg-preview.png')}
+          source={logoSource}
           style={styles.logo}
           resizeMode="contain"
           accessible={true}
@@ -376,8 +406,78 @@ const WelcomeOnboarding: React.FC<WelcomeOnboardingProps> = ({ onComplete }) => 
           </Text>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="none"
+        onRequestClose={() => closeModal(false)}
+        accessible={true}
+        accessibilityViewIsModal={true}
+      >
+        <View style={localStyles.modalOverlay}>
+          <Animated.View
+            style={[
+              localStyles.modalContainer,
+              { transform: [{ scale: modalScale }], opacity: modalOpacity },
+            ]}
+          >
+            <Text style={localStyles.modalTitle}>Welcome to a11Yum! 🎉</Text>
+            <Text style={localStyles.modalMessage}>
+              Your personalized recipe experience is ready. Let's start cooking!
+            </Text>
+            <TouchableOpacity
+              style={localStyles.modalButton}
+              onPress={() => closeModal(true)}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Let's Cook"
+            >
+              <Text style={localStyles.modalButtonText}>Let's Cook!</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
 export default WelcomeOnboarding;
+
+const localStyles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContainer: {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  modalMessage: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  modalButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+});
