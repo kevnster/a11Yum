@@ -7,7 +7,7 @@ interface CreateRecipeButtonProps {
   buttonStyle?: any;
   textStyle?: any;
   label?: string;
-  onCreate?: (url: string) => void; // optional callback to create/open a unique screen for the provided URL
+  onRecipeCreate?: (url: string) => void;
 }
 
 export const CreateRecipeButton: React.FC<CreateRecipeButtonProps> = ({
@@ -15,7 +15,7 @@ export const CreateRecipeButton: React.FC<CreateRecipeButtonProps> = ({
   buttonStyle,
   textStyle,
   label,
-  onCreate,
+  onRecipeCreate,
 }) => {
   const [visible, setVisible] = useState(false);
   const opacity = useRef(new Animated.Value(0)).current;
@@ -52,7 +52,10 @@ export const CreateRecipeButton: React.FC<CreateRecipeButtonProps> = ({
       setUrlError('Please enter a recipe URL');
       return;
     }
-    if (onCreate) onCreate(url);
+    // Call the callback function to handle recipe creation
+    if (onRecipeCreate) {
+      onRecipeCreate(url);
+    }
     close();
   };
 

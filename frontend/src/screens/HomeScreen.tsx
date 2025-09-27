@@ -7,11 +7,15 @@ import RecipeCard from '../components/RecipeCard';
 import { CreateRecipeButton } from '../components/RecipeModal';
 import { Recipe, RecipeModel } from '../types/Recipe';
 import { useThemeStyles } from '../hooks/useThemeStyles';
+import RecipeDetailScreen from './RecipeDetailScreen';
 
 const HomeScreen: React.FC = () => {
   const { user, clearSession } = useAuth0();
   const { colors } = useThemeStyles();
   const insets = useSafeAreaInsets();
+  
+  // Recipe navigation state
+  const [currentRecipeUrl, setCurrentRecipeUrl] = useState<string | null>(null);
   
   // Modal state for cross-platform alerts
   const [modalVisible, setModalVisible] = useState(false);
@@ -91,6 +95,23 @@ const HomeScreen: React.FC = () => {
     showModal('Quick Action', `${action} feature coming soon!`);
   };
 
+  const handleRecipeCreate = (url: string) => {
+    setCurrentRecipeUrl(url);
+  };
+
+  const handleBackToHome = () => {
+    setCurrentRecipeUrl(null);
+  };
+
+  // If we have a recipe URL, show the RecipeDetailScreen
+  if (currentRecipeUrl) {
+    return (
+      <RecipeDetailScreen 
+        route={{ params: { url: currentRecipeUrl } }} 
+        navigation={{ goBack: handleBackToHome }}
+      />
+    );
+  }
 
   return (
     <>
@@ -128,6 +149,7 @@ const HomeScreen: React.FC = () => {
             <CreateRecipeButton
               buttonStyle={styles.createRecipeButton}
               textStyle={styles.createRecipeButtonText}
+              onRecipeCreate={handleRecipeCreate}
             />
           </View>
         </View>
@@ -135,7 +157,7 @@ const HomeScreen: React.FC = () => {
         <View style={styles.recipesSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Recipes</Text>
-            <CreateRecipeButton variant="link" textStyle={styles.createNewText} />
+            <CreateRecipeButton variant="link" textStyle={styles.createNewText} onRecipeCreate={handleRecipeCreate} />
           </View>
           
           {recentRecipes.slice(0, 3).map((recipe) => (
