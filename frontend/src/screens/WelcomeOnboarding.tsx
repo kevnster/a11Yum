@@ -13,6 +13,7 @@ import {
 import { useAuth0 } from 'react-native-auth0';
 import { UserStorage } from '../utils/UserStorage';
 import { UserProfile } from '../services/Auth0Service';
+import { useAuth0Management } from '../services/Auth0ManagementService';
 import styles from '../css/WelcomeOnboarding.styles';
 
 interface OnboardingData {
@@ -29,6 +30,7 @@ interface WelcomeOnboardingProps {
 
 const WelcomeOnboarding: React.FC<WelcomeOnboardingProps> = ({ onComplete }) => {
   const { user } = useAuth0();
+  const { saveUserProfile } = useAuth0Management();
   const [currentStep, setCurrentStep] = useState(1);
   const [modalVisible, setModalVisible] = useState(false);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
@@ -126,14 +128,14 @@ const WelcomeOnboarding: React.FC<WelcomeOnboardingProps> = ({ onComplete }) => 
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     } else {
       // Save onboarding data
       const userProfile: UserProfile = {
-        firstName: user?.given_name || '',
-        lastName: user?.family_name || '',
+        firstName: user?.given_name || user?.name?.split(' ')[0] || '',
+        lastName: user?.family_name || user?.name?.split(' ').slice(1).join(' ') || '',
         dietaryRestrictions: onboardingData.dietaryNeeds,
         accessibilityNeeds: [
           ...onboardingData.cookingPreferences,
@@ -145,11 +147,29 @@ const WelcomeOnboarding: React.FC<WelcomeOnboardingProps> = ({ onComplete }) => 
       };
 
       console.log('Onboarding data:', onboardingData);
-      UserStorage.saveUserProfile(userProfile);
-      UserStorage.markProfileSetupCompleted();
       
-      // Show modal for confirmation across platforms
-      setModalVisible(true);
+      try {
+        // Save to Auth0 first, then local storage as backup
+        const auth0Success = await saveUserProfile(userProfile);
+        if (auth0Success) {
+          console.log('Profile saved to Auth0 successfully');
+        } else {
+          console.log('Failed to save to Auth0, using local storage');
+        }
+        
+        // Always save locally as backup
+        await UserStorage.saveUserProfile(userProfile);
+        await UserStorage.markProfileSetupCompleted();
+        
+        // Show modal for confirmation across platforms
+        setModalVisible(true);
+      } catch (error) {
+        console.error('Error saving profile:', error);
+        // Still save locally even if Auth0 fails
+        await UserStorage.saveUserProfile(userProfile);
+        await UserStorage.markProfileSetupCompleted();
+        setModalVisible(true);
+      }
     }
   };
 

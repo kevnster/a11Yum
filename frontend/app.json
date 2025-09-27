@@ -9,7 +9,7 @@
     "newArchEnabled": true,
     "description": "Accessible recipe generation for everyone",
     "splash": {
-      "image": "./assets/logo.png",
+      "image": "./assets/logo-removebg-preview.png",
       "resizeMode": "contain",
       "backgroundColor": "#F8F9FA"
     },
@@ -30,7 +30,7 @@
       "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/logo.png",
+      "favicon": "./assets/logo-removebg-preview.png",
       "name": "a11Yum - Accessible Recipe Generation",
       "shortName": "a11Yum"
     },

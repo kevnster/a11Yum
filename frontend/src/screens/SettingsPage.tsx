@@ -142,7 +142,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
       {/* User Info */}
       <View style={[styles.userSection, isDarkMode && styles.darkCard]}>
         <Text style={[styles.userName, isDarkMode && styles.darkText]}>
-          {user?.name || 'User'}
+          {user?.given_name || user?.name || user?.nickname || 'User'}
         </Text>
         <Text style={[styles.userEmail, isDarkMode && styles.darkSecondaryText]}>
           {user?.email || 'user@example.com'}

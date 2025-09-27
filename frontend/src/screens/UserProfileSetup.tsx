@@ -25,8 +25,8 @@ const UserProfileSetup: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
   const { user } = useAuth0();
   const [currentStep, setCurrentStep] = useState(1);
   const [profileData, setProfileData] = useState<ProfileData>({
-    firstName: user?.given_name || '',
-    lastName: user?.family_name || '',
+    firstName: user?.given_name || user?.name?.split(' ')[0] || '',
+    lastName: user?.family_name || user?.name?.split(' ').slice(1).join(' ') || '',
     dietaryRestrictions: [],
     accessibilityNeeds: [],
     favoriteCuisines: [],

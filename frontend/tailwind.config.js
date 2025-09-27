@@ -53,6 +53,8 @@ module.exports = {
           'dark-green': '#689F38',
           coral: '#FF6B35',
           teal: '#26A69A',
+          // Primary brand color
+          primary: '#FF8C42',
         },
         // Neutral colors
         neutral: {
@@ -79,6 +81,12 @@ module.exports = {
       },
       fontFamily: {
         'system': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 'sans-serif'],
+        'geist': ['Geist', 'Geist-Regular', 'system-ui', 'sans-serif'],
+        'geist-thin': ['Geist-Thin', 'system-ui', 'sans-serif'],
+        'geist-light': ['Geist-Light', 'system-ui', 'sans-serif'],
+        'geist-medium': ['Geist-Medium', 'system-ui', 'sans-serif'],
+        'geist-semibold': ['Geist-SemiBold', 'system-ui', 'sans-serif'],
+        'geist-bold': ['Geist-Bold', 'system-ui', 'sans-serif'],
       },
       spacing: {
         '18': '4.5rem',

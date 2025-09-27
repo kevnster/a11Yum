@@ -1,7 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet, Text } from 'react-native';
 import Colors from '../constants/Colors';
 
 // Import screens
@@ -13,9 +12,34 @@ const Tab = createBottomTabNavigator();
 
 // Custom tab bar icon component
 const TabIcon = ({ name, color, size, focused }: { name: string; color: string; size: number; focused: boolean }) => {
+  const getEmoji = (iconName: string) => {
+    switch (iconName) {
+      case 'home':
+        return '🏠';
+      case 'heart':
+        return '❤️';
+      case 'settings':
+        return '⚙️';
+      default:
+        return '❓';
+    }
+  };
+
   return (
     <View style={[styles.tabIconContainer, focused && styles.activeTabIcon]}>
-      <Ionicons name={name as any} size={size} color={color} />
+      <Text style={{
+        fontSize: 16,
+        opacity: focused ? 1 : 0.7,
+        color: color,
+        textAlign: 'center',
+        lineHeight: 18,
+        includeFontPadding: false,
+        textAlignVertical: 'center',
+        minHeight: 18,
+        marginTop: 2
+      }}>
+        {getEmoji(name)}
+      </Text>
     </View>
   );
 };
@@ -28,16 +52,16 @@ const BottomTabNavigator = () => {
           let iconName: string;
 
           if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
+            iconName = 'home';
           } else if (route.name === 'SavedRecipes') {
-            iconName = focused ? 'bookmark' : 'bookmark-outline';
+            iconName = 'heart';
           } else if (route.name === 'Settings') {
-            iconName = focused ? 'settings' : 'settings-outline';
+            iconName = 'settings';
           } else {
-            iconName = 'help-outline';
+            iconName = 'help-circle';
           }
 
-          return <TabIcon name={iconName} color={color} size={size} focused={focused} />;
+          return <TabIcon name={iconName} color={color} size={22} focused={focused} />;
         },
         tabBarActiveTintColor: Colors.primary.orange,
         tabBarInactiveTintColor: Colors.text.secondary,
@@ -45,9 +69,10 @@ const BottomTabNavigator = () => {
           backgroundColor: Colors.background.primary,
           borderTopColor: Colors.neutral.mediumGray,
           borderTopWidth: 1,
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 88,
+          paddingBottom: 12,
+          paddingTop: 12,
+          height: 92,
+          paddingHorizontal: 10,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -99,12 +124,15 @@ const styles = StyleSheet.create({
   tabIconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    minHeight: 40,
+    minWidth: 40,
+    position: 'relative',
   },
   activeTabIcon: {
-    backgroundColor: `${Colors.primary.orange}20`,
+    backgroundColor: `${Colors.primary.orange}15`,
   },
 });
 

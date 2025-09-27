@@ -6,9 +6,11 @@ import styles from '../css/HomeScreen.styles';
 import RecipeCard from '../components/RecipeCard';
 import { CreateRecipeButton } from '../components/RecipeModal';
 import { Recipe, RecipeModel } from '../types/Recipe';
+import { useThemeStyles } from '../hooks/useThemeStyles';
 
 const HomeScreen: React.FC = () => {
   const { user, clearSession } = useAuth0();
+  const { colors } = useThemeStyles();
   const insets = useSafeAreaInsets();
   
   // Modal state for cross-platform alerts
@@ -68,9 +70,10 @@ const HomeScreen: React.FC = () => {
   const hasGeneratedRecipes = recentRecipes.length > 0;
 
   const handleRecipePress = (recipe: Recipe) => {
+    const recipeModel = new RecipeModel(recipe);
     showModal(
       recipe.title,
-      `Estimated time: ${recipe.getTimeDisplay()}\nDifficulty: ${recipe.difficulty}`
+      `Estimated time: ${recipeModel.getTimeDisplay()}\nDifficulty: ${recipe.difficulty}`
     );
   };
 
@@ -88,15 +91,27 @@ const HomeScreen: React.FC = () => {
     showModal('Quick Action', `${action} feature coming soon!`);
   };
 
+
   return (
     <>
-    <ScrollView style={[styles.container, { paddingTop: insets.top }]}>
+    <ScrollView
+      style={[
+        styles.container,
+        { paddingTop: insets.top, backgroundColor: colors.background }
+      ]}
+    >
       {/* Welcome Section */}
       <View style={styles.welcomeSection}>
-        <Text style={styles.welcomeText}>
-          Welcome back, {user?.name?.split(' ')[0] || 'Chef'}! 👋
+        <Text style={[
+          styles.welcomeText,
+          { fontFamily: 'Geist-SemiBold', color: colors.text }
+        ]}>
+          Welcome back, {user?.given_name || user?.name || user?.nickname || 'Chef'}! 👋
         </Text>
-        <Text style={styles.welcomeSubtext}>
+        <Text style={[
+          styles.welcomeSubtext,
+          { fontFamily: 'Geist', color: colors.textSecondary }
+        ]}>
           What delicious creation are we making today?
         </Text>
       </View>
@@ -136,38 +151,38 @@ const HomeScreen: React.FC = () => {
 
       {/* Quick Actions */}
       <View style={styles.quickActionsSection}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <Text style={[styles.sectionTitle, { fontFamily: 'Geist-SemiBold' }]}>Quick Actions</Text>
         <View style={styles.quickActionsGrid}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.quickActionCard}
             onPress={() => handleQuickAction('Random Recipe')}
           >
             <Text style={styles.quickActionIcon}>🎲</Text>
-            <Text style={styles.quickActionText}>Random Recipe</Text>
+            <Text style={[styles.quickActionText, { fontFamily: 'Geist-Medium' }]}>Random Recipe</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.quickActionCard}
             onPress={() => handleQuickAction('Meal Planner')}
           >
             <Text style={styles.quickActionIcon}>📅</Text>
-            <Text style={styles.quickActionText}>Meal Planner</Text>
+            <Text style={[styles.quickActionText, { fontFamily: 'Geist-Medium' }]}>Meal Planner</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.quickActionCard}
             onPress={() => handleQuickAction('Grocery List')}
           >
             <Text style={styles.quickActionIcon}>🛒</Text>
-            <Text style={styles.quickActionText}>Grocery List</Text>
+            <Text style={[styles.quickActionText, { fontFamily: 'Geist-Medium' }]}>Grocery List</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.quickActionCard}
             onPress={() => handleQuickAction('Kitchen Timer')}
           >
             <Text style={styles.quickActionIcon}>⏰</Text>
-            <Text style={styles.quickActionText}>Kitchen Timer</Text>
+            <Text style={[styles.quickActionText, { fontFamily: 'Geist-Medium' }]}>Kitchen Timer</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -177,8 +192,8 @@ const HomeScreen: React.FC = () => {
         <View style={styles.tipCard}>
           <Text style={styles.tipIcon}>💡</Text>
           <View style={styles.tipContent}>
-            <Text style={styles.tipTitle}>Today's Cooking Tip</Text>
-            <Text style={styles.tipText}>
+            <Text style={[styles.tipTitle, { fontFamily: 'Geist-SemiBold' }]}>Today's Cooking Tip</Text>
+            <Text style={[styles.tipText, { fontFamily: 'Geist' }]}>
               Always taste as you go! Seasoning throughout the cooking process creates more balanced flavors than adding everything at the end.
             </Text>
           </View>
