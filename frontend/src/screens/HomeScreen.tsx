@@ -4,6 +4,7 @@ import { useAuth0 } from 'react-native-auth0';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styles from '../css/HomeScreen.styles';
 import RecipeCard from '../components/RecipeCard';
+import { CreateRecipeButton } from '../components/RecipeModal';
 import { Recipe, RecipeModel } from '../types/Recipe';
 
 const HomeScreen: React.FC = () => {
@@ -66,13 +67,6 @@ const HomeScreen: React.FC = () => {
 
   const hasGeneratedRecipes = recentRecipes.length > 0;
 
-  const handleCreateRecipe = () => {
-    showModal(
-      'Create Recipe',
-      'Generate a curated, accessibility-friendly version of a recipe.'
-    );
-  };
-
   const handleRecipePress = (recipe: Recipe) => {
     showModal(
       recipe.title,
@@ -116,21 +110,17 @@ const HomeScreen: React.FC = () => {
             <Text style={styles.emptyStateDescription}>
               Let's create your first personalized recipe based on your preferences and dietary needs.
             </Text>
-            <TouchableOpacity 
-              style={styles.createRecipeButton}
-              onPress={handleCreateRecipe}
-            >
-              <Text style={styles.createRecipeButtonText}>✨ Create Your First Recipe</Text>
-            </TouchableOpacity>
+            <CreateRecipeButton
+              buttonStyle={styles.createRecipeButton}
+              textStyle={styles.createRecipeButtonText}
+            />
           </View>
         </View>
       ) : (
         <View style={styles.recipesSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Recipes</Text>
-            <TouchableOpacity onPress={handleCreateRecipe}>
-              <Text style={styles.createNewText}>+ Create New</Text>
-            </TouchableOpacity>
+            <CreateRecipeButton variant="link" textStyle={styles.createNewText} />
           </View>
           
           {recentRecipes.slice(0, 3).map((recipe) => (
