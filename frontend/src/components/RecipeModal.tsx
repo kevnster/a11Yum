@@ -68,7 +68,7 @@ export const CreateRecipeButton: React.FC<CreateRecipeButtonProps> = ({
             <Animated.View style={[styles.container, { opacity, transform: [{ scale }] }]}>
               <Text style={styles.title}>Create Recipe</Text>
               <Text style={styles.message}>
-                Paste an Allrecipes recipe URL to create a unique recipe screen.
+                Paste a recipe URL to create a unique, curated recipe screen.
               </Text>
 
               <TextInput
