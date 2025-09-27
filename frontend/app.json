@@ -4,7 +4,7 @@
     "slug": "a11yum",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.png",
+    "icon": "./assets/logo-removebg-preview.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "description": "Accessible recipe generation for everyone",
@@ -21,7 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo.png",
+        "foregroundImage": "./assets/logo-removebg-preview.png",
         "backgroundColor": "#F8F9FA"
       },
       "edgeToEdgeEnabled": true,

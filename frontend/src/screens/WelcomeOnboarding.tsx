@@ -327,7 +327,7 @@ const WelcomeOnboarding: React.FC<WelcomeOnboardingProps> = ({ onComplete }) => 
     <View style={styles.container}>
       <View style={styles.header}>
         <Image
-          source={require('../../assets/logo.png')}
+          source={require('../../assets/logo-removebg-preview.png')}
           style={styles.logo}
           resizeMode="contain"
           accessible={true}
