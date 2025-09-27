@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, Animated, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Animated, StyleSheet, TextInput } from 'react-native';
+import styles from '../css/RecipeModal.styles';
 
 interface CreateRecipeButtonProps {
   variant?: 'button' | 'link';
   buttonStyle?: any;
   textStyle?: any;
   label?: string;
+  onCreate?: (url: string) => void; // optional callback to create/open a unique screen for the provided URL
 }
 
 export const CreateRecipeButton: React.FC<CreateRecipeButtonProps> = ({
@@ -13,10 +15,13 @@ export const CreateRecipeButton: React.FC<CreateRecipeButtonProps> = ({
   buttonStyle,
   textStyle,
   label,
+  onCreate,
 }) => {
   const [visible, setVisible] = useState(false);
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.96)).current;
+  const [urlInput, setUrlInput] = useState('');
+  const [urlError, setUrlError] = useState<string | null>(null);
 
   useEffect(() => {
     if (visible) {
@@ -26,6 +31,10 @@ export const CreateRecipeButton: React.FC<CreateRecipeButtonProps> = ({
         Animated.timing(opacity, { toValue: 1, duration: 100, useNativeDriver: true }),
         Animated.timing(scale, { toValue: 1, duration: 140, useNativeDriver: true }),
       ]).start();
+    } else {
+      // clear input when modal closed
+      setUrlInput('');
+      setUrlError(null);
     }
   }, [visible]);
 
@@ -37,8 +46,19 @@ export const CreateRecipeButton: React.FC<CreateRecipeButtonProps> = ({
     ]).start(() => setVisible(false));
   };
 
+  const isAllrecipesUrl = (u: string) => /https?:\/\/(www\.)?allrecipes\.com\/recipe\/\d+/i.test(u.trim());
+
   const createFlow = () => {
-    // ...hook into real create flow here...
+    const url = urlInput.trim();
+    if (!url) {
+      setUrlError('Please enter a recipe URL.');
+      return;
+    }
+    if (!isAllrecipesUrl(url)) {
+      setUrlError('Please provide an Allrecipes recipe URL (e.g. https://www.allrecipes.com/recipe/12345/...).');
+      return;
+    }
+    if (onCreate) onCreate(url);
     close();
   };
 
@@ -54,8 +74,20 @@ export const CreateRecipeButton: React.FC<CreateRecipeButtonProps> = ({
             <Animated.View style={[styles.container, { opacity, transform: [{ scale }] }]}>
               <Text style={styles.title}>Create Recipe</Text>
               <Text style={styles.message}>
-                Generate a curated, accessibility-friendly version of a recipe.
+                Paste an Allrecipes recipe URL to create a unique recipe screen.
               </Text>
+
+              <TextInput
+                style={styles.input}
+                placeholder="https://www.allrecipes.com/recipe/12345/..."
+                value={urlInput}
+                onChangeText={(t) => { setUrlInput(t); setUrlError(null); }}
+                keyboardType="url"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {urlError ? <Text style={styles.errorText}>{urlError}</Text> : null}
+
               <View style={styles.buttons}>
                 <TouchableOpacity style={[styles.btn, styles.primary]} onPress={createFlow}>
                   <Text style={styles.btnText}>Create</Text>
@@ -82,8 +114,20 @@ export const CreateRecipeButton: React.FC<CreateRecipeButtonProps> = ({
           <Animated.View style={[styles.container, { opacity, transform: [{ scale }] }]}>
             <Text style={styles.title}>Create Recipe</Text>
             <Text style={styles.message}>
-              Generate a curated, accessibility-friendly version of a recipe.
+              Paste a recipe URL to create a unique, curated recipe.
             </Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="https://www.allrecipes.com/recipe/12345/..."
+              value={urlInput}
+              onChangeText={(t) => { setUrlInput(t); setUrlError(null); }}
+              keyboardType="url"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            {urlError ? <Text style={styles.errorText}>{urlError}</Text> : null}
+
             <View style={styles.buttons}>
               <TouchableOpacity style={[styles.btn, styles.primary]} onPress={createFlow}>
                 <Text style={styles.btnText}>Create</Text>
@@ -98,31 +142,3 @@ export const CreateRecipeButton: React.FC<CreateRecipeButtonProps> = ({
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  container: {
-    width: '100%',
-    maxWidth: 420,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    alignItems: 'center',
-  },
-  title: { fontSize: 18, fontWeight: '600', marginBottom: 8 },
-  message: { fontSize: 15, textAlign: 'center', marginBottom: 16 },
-  buttons: { flexDirection: 'row', width: '100%', justifyContent: 'space-between' },
-  btn: { flex: 1, paddingVertical: 10, marginHorizontal: 6, borderRadius: 8, alignItems: 'center' },
-  primary: { backgroundColor: '#4CAF50' },
-  secondary: { backgroundColor: '#ddd' },
-  btnText: { color: '#fff', fontWeight: '600' },
-  button: { backgroundColor: '#4CAF50', paddingVertical: 12, paddingHorizontal: 16, borderRadius: 8 },
-  buttonText: { color: '#fff', fontWeight: '700' },
-  linkText: { color: '#4CAF50', fontWeight: '700' },
-});
