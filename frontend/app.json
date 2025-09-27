@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "a11YumExpo",
-    "slug": "a11YumExpo",
+    "name": "a11Yum",
+    "slug": "a11Yum",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.a11YumExpo"
+      "bundleIdentifier": "com.anonymous.a11Yum"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,10 +23,19 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.a11YumExpo"
+      "package": "com.anonymous.a11Yum"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "react-native-auth0",
+        {
+          "domain": "dev-jhskl14nw5eonveg.us.auth0.com"
+        }
+      ],
+      "expo-asset"
+    ]
   }
 }
