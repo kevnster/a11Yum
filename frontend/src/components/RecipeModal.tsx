@@ -46,16 +46,10 @@ export const CreateRecipeButton: React.FC<CreateRecipeButtonProps> = ({
     ]).start(() => setVisible(false));
   };
 
-  const isAllrecipesUrl = (u: string) => /https?:\/\/(www\.)?allrecipes\.com\/recipe\/\d+/i.test(u.trim());
-
   const createFlow = () => {
     const url = urlInput.trim();
     if (!url) {
       setUrlError('Please enter a recipe URL');
-      return;
-    }
-    if (!isAllrecipesUrl(url)) {
-      setUrlError('Please provide an Allrecipes recipe URL (e.g. https://www.allrecipes.com/recipe/12345/...).');
       return;
     }
     if (onCreate) onCreate(url);
