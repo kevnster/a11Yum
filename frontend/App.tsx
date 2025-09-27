@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, Button, StyleSheet, Text, View } from 'react-native';
+import { Alert, Button, StyleSheet, Text, View, Platform } from 'react-native';
 import { useAuth0, Auth0Provider } from 'react-native-auth0';
+import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { PortalHost } from '@rn-primitives/portal';
 import config from './auth0-configuration';
-import HomePage from './src/screens/HomePage';
+import BottomTabNavigator from './src/navigation/BottomTabNavigator';
+import HomeScreen from './src/screens/HomeScreen';
 import WelcomeOnboarding from './src/screens/WelcomeOnboarding';
 import LandingPage from './src/screens/LandingPage';
 import { UserStorage } from './src/utils/UserStorage';
@@ -67,7 +71,9 @@ const Home: React.FC = () => {
   };
 
   const handleProfileSetupComplete = () => {
+    console.log('Profile setup completed, hiding onboarding...');
     setShowProfileSetup(false);
+    setProfileSetupChecked(true);
   };
 
   if (isLoading) {
@@ -83,7 +89,16 @@ const Home: React.FC = () => {
     if (showProfileSetup) {
       return <WelcomeOnboarding onComplete={handleProfileSetupComplete} />;
     }
-    return <HomePage />;
+    // Use simple screen for web, navigation for mobile
+    if (Platform.OS === 'web') {
+      return <HomeScreen />;
+    }
+    
+    return (
+      <NavigationContainer>
+        <BottomTabNavigator />
+      </NavigationContainer>
+    );
   }
 
   // Show landing page for non-logged-in users
@@ -94,9 +109,12 @@ const Home: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <Auth0Provider domain={config.domain} clientId={config.clientId}>
-      <Home />
-    </Auth0Provider>
+    <SafeAreaProvider>
+      <Auth0Provider domain={config.domain} clientId={config.clientId}>
+        <Home />
+        <PortalHost />
+      </Auth0Provider>
+    </SafeAreaProvider>
   );
 };
 
