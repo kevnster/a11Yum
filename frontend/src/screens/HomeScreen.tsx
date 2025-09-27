@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Animated } from 'react-native';
 import { useAuth0 } from 'react-native-auth0';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styles from '../css/HomeScreen.styles';
@@ -9,6 +9,46 @@ import { Recipe, RecipeModel } from '../types/Recipe';
 const HomeScreen: React.FC = () => {
   const { user, clearSession } = useAuth0();
   const insets = useSafeAreaInsets();
+  
+  // Modal state for cross-platform alerts
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalOnConfirm, setModalOnConfirm] = useState<(() => void) | null>(null);
+  // Animated modal controls (faster transitions)
+  const modalOpacity = useRef(new Animated.Value(0)).current;
+  const modalScale = useRef(new Animated.Value(0.96)).current;
+  
+  useEffect(() => {
+    if (modalVisible) {
+      // quick pop-in
+      modalOpacity.setValue(0);
+      modalScale.setValue(0.96);
+      Animated.parallel([
+        Animated.timing(modalOpacity, { toValue: 1, duration: 120, useNativeDriver: true }),
+        Animated.timing(modalScale, { toValue: 1, duration: 160, useNativeDriver: true }),
+      ]).start();
+    }
+  }, [modalVisible]);
+
+  const showModal = (title: string, message: string, onConfirm?: () => void) => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalOnConfirm(() => onConfirm || null);
+    setModalVisible(true);
+  };
+
+  const closeModal = (callConfirm = false) => {
+    // animate out quickly then hide
+    Animated.parallel([
+      Animated.timing(modalOpacity, { toValue: 0, duration: 100, useNativeDriver: true }),
+      Animated.timing(modalScale, { toValue: 0.96, duration: 100, useNativeDriver: true }),
+    ]).start(() => {
+      setModalVisible(false);
+      if (callConfirm && modalOnConfirm) modalOnConfirm();
+      setModalOnConfirm(null);
+    });
+  };
   
   // Mock data - replace with actual recipe storage later
   const [recentRecipes, setRecentRecipes] = useState<Recipe[]>([
@@ -27,18 +67,16 @@ const HomeScreen: React.FC = () => {
   const hasGeneratedRecipes = recentRecipes.length > 0;
 
   const handleCreateRecipe = () => {
-    Alert.alert(
+    showModal(
       'Create Recipe',
-      'Recipe generation coming soon! This will take you to an AI-powered recipe creator.',
-      [{ text: 'OK' }]
+      'Recipe generation coming soon! This will take you to an AI-powered recipe creator.'
     );
   };
 
   const handleRecipePress = (recipe: Recipe) => {
-    Alert.alert(
+    showModal(
       recipe.title,
-      `Estimated time: ${recipe.getTimeDisplay()}\nDifficulty: ${recipe.difficulty}`,
-      [{ text: 'Close' }]
+      `Estimated time: ${recipe.getTimeDisplay()}\nDifficulty: ${recipe.difficulty}`
     );
   };
 
@@ -53,10 +91,11 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleQuickAction = (action: string) => {
-    Alert.alert('Quick Action', `${action} feature coming soon!`);
+    showModal('Quick Action', `${action} feature coming soon!`);
   };
 
   return (
+    <>
     <ScrollView style={[styles.container, { paddingTop: insets.top }]}>
       {/* Welcome Section */}
       <View style={styles.welcomeSection}>
@@ -156,9 +195,47 @@ const HomeScreen: React.FC = () => {
         </View>
       </View>
     </ScrollView>
+
+    <Modal
+      visible={modalVisible}
+      transparent={true}
+      animationType="none"
+      onRequestClose={() => closeModal(false)}
+      accessible={true}
+      accessibilityViewIsModal={true}
+    >
+      <View style={styles.modalOverlay}>
+        <Animated.View
+          style={[
+            styles.modalContainer,
+            { opacity: modalOpacity, transform: [{ scale: modalScale }] },
+          ]}
+        >
+          <Text style={styles.modalTitle}>{modalTitle}</Text>
+          <Text style={styles.modalMessage}>{modalMessage}</Text>
+          <View style={styles.modalButtons}>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.modalButtonPrimary]}
+              onPress={() => closeModal(true)}
+              accessible={true}
+              accessibilityLabel="Confirm"
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.modalButtonSecondary]}
+              onPress={() => closeModal(false)}
+              accessible={true}
+              accessibilityLabel="Cancel"
+            >
+              <Text style={styles.modalButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </View>
+    </Modal>
+    </>
   );
 };
-
-
 
 export default HomeScreen;
