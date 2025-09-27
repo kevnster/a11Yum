@@ -1,0 +1,104 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./App.{js,jsx,ts,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "./components/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // Brand colors from your logo
+        brand: {
+          orange: '#FF8C42',
+          'light-orange': '#FFB366',
+          green: '#8BC34A',
+          'dark-green': '#689F38',
+          coral: '#FF6B35',
+          teal: '#26A69A',
+        },
+        // Neutral colors
+        neutral: {
+          white: '#FFFFFF',
+          'light-gray': '#F8F9FA',
+          'medium-gray': '#E0E0E0',
+          'dark-gray': '#666666',
+          charcoal: '#333333',
+          black: '#000000',
+        },
+        // Semantic colors
+        semantic: {
+          success: '#8BC34A',
+          warning: '#FF8C42',
+          error: '#FF6B35',
+          info: '#26A69A',
+        },
+        // Accessibility colors
+        accessibility: {
+          focus: '#FF8C42',
+          selection: 'rgba(139, 195, 74, 0.2)',
+          highlight: 'rgba(255, 179, 102, 0.12)',
+        },
+      },
+      fontFamily: {
+        'system': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 'sans-serif'],
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+        '128': '32rem',
+      },
+      borderRadius: {
+        'xl': '1rem',
+        '2xl': '1.5rem',
+        '3xl': '2rem',
+      },
+      boxShadow: {
+        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
+        'medium': '0 4px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        'strong': '0 10px 40px -10px rgba(0, 0, 0, 0.15), 0 4px 25px -5px rgba(0, 0, 0, 0.1)',
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'slide-up': 'slideUp 0.5s ease-out',
+        'slide-down': 'slideDown 0.5s ease-out',
+        'scale-in': 'scaleIn 0.3s ease-out',
+        'bounce-gentle': 'bounceGentle 2s infinite',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        slideDown: {
+          '0%': { transform: 'translateY(-20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        scaleIn: {
+          '0%': { transform: 'scale(0.9)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        bounceGentle: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-5px)' },
+        },
+      },
+    },
+  },
+  plugins: [],
+  // For React Native, we need to disable some features
+  corePlugins: {
+    // Disable features that don't work in React Native
+    preflight: false,
+    container: false,
+    float: false,
+    clear: false,
+    skew: false,
+    caretColor: false,
+    sepia: false,
+  },
+};
