@@ -1,6 +1,7 @@
 {
-  "name": "00-login-expo",
+  "name": "a11yum",
   "version": "1.0.0",
+  "description": "Accessible recipe generation for everyone",
   "main": "index.ts",
   "scripts": {
     "start": "expo start --dev-client",
@@ -9,15 +10,19 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@auth0/auth0-spa-js": "^2.4.1",
+    "@expo/metro-runtime": "~5.0.5",
     "expo": "~53.0.9",
     "expo-asset": "~11.1.7",
     "expo-constants": "~17.1.7",
     "expo-dev-client": "~5.1.8",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
+    "react-dom": "19.0.0",
     "react-native": "0.79.2",
     "react-native-auth0": "^5.0.0-beta.1",
-    "react-native-dotenv": "^3.4.11"
+    "react-native-dotenv": "^3.4.11",
+    "react-native-web": "^0.20.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
