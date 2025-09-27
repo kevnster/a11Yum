@@ -1,32 +1,38 @@
 {
   "expo": {
     "name": "a11Yum",
-    "slug": "a11Yum",
+    "slug": "a11yum",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "description": "Accessible recipe generation for everyone",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F8F9FA"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.a11Yum"
+      "bundleIdentifier": "com.a11yum.app",
+      "displayName": "a11Yum",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#F8F9FA"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.a11Yum"
+      "package": "com.a11yum.app",
+      "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/logo.png",
+      "name": "a11Yum - Accessible Recipe Generation",
+      "shortName": "a11Yum"
     },
     "plugins": [
       [
