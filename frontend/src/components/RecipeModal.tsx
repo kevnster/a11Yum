@@ -51,7 +51,7 @@ export const CreateRecipeButton: React.FC<CreateRecipeButtonProps> = ({
   const createFlow = () => {
     const url = urlInput.trim();
     if (!url) {
-      setUrlError('Please enter a recipe URL.');
+      setUrlError('Please enter a recipe URL');
       return;
     }
     if (!isAllrecipesUrl(url)) {
