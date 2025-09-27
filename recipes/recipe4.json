@@ -1,0 +1,63 @@
+{
+    "author": "Pat Bernitt",
+    "canonical_url": "https://www.allrecipes.com/mediterranean-flatbread-recipe-11730877",
+    "category": "Appetizer,Dinner",
+    "cook_time": 15,
+    "cuisine": "American",
+    "description": "These Mediterranean flatbreads are packed with fresh flavor, piled with tomatoes, Kalamata olives, red onion, pepperoncini, and feta cheese. They look a little fancy, but are uncomplicated and perfect for a quick meal or appetizer.",
+    "host": "allrecipes.com",
+    "image": "https://www.allrecipes.com/thmb/4YySVNYIkXVPRBq9vo_jfksLh24=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/11730877_Mediterranean-Flatbread_Pat-Bernitt_4x3-dcae9bd98b7e4cbc8ca3dd3c39269509.jpg",
+    "ingredient_groups": [
+        {
+            "ingredients": [
+                "2 flatbreads, store-bought or homemade",
+                "1/4 cup extra virgin olive oil",
+                "3 garlic cloves, finely chopped",
+                "1-1/2 cups halved cherry or grape tomatoes",
+                "1/2 cup sliced Kalamata olives",
+                "1/2 red onion, thinly sliced",
+                "1/3 cup sliced pepperoncini",
+                "3 tablespoons crumbled feta cheese, or more to taste",
+                "chopped fresh oregano garnish (optional)"
+            ],
+            "purpose": null
+        }
+    ],
+    "ingredients": [
+        "2 flatbreads, store-bought or homemade",
+        "1/4 cup extra virgin olive oil",
+        "3 garlic cloves, finely chopped",
+        "1-1/2 cups halved cherry or grape tomatoes",
+        "1/2 cup sliced Kalamata olives",
+        "1/2 red onion, thinly sliced",
+        "1/3 cup sliced pepperoncini",
+        "3 tablespoons crumbled feta cheese, or more to taste",
+        "chopped fresh oregano garnish (optional)"
+    ],
+    "instructions": "Preheat the oven to 425 degrees F (220 degrees C).\nCombine olive oil and garlic in a small bowl. Lightly brush a little garlic olive oil over the flatbreads.\nAdd tomatoes, olives, onion, and pepperoncini to a bowl; drizzle with remaining garlic olive oil, and gently combine.\nEvenly top flatbreads with the tomato mixture, sprinkle with feta cheese, and place on a baking sheet.\nBake. in the preheated oven until flatbreads are starting to turn golden brown, 12 to 15 minutes. Sprinkle with chopped oregano and serve.",
+    "instructions_list": [
+        "Preheat the oven to 425 degrees F (220 degrees C).",
+        "Combine olive oil and garlic in a small bowl. Lightly brush a little garlic olive oil over the flatbreads.",
+        "Add tomatoes, olives, onion, and pepperoncini to a bowl; drizzle with remaining garlic olive oil, and gently combine.",
+        "Evenly top flatbreads with the tomato mixture, sprinkle with feta cheese, and place on a baking sheet.",
+        "Bake. in the preheated oven until flatbreads are starting to turn golden brown, 12 to 15 minutes. Sprinkle with chopped oregano and serve."
+    ],
+    "language": "en",
+    "nutrients": {
+        "calories": "373 kcal",
+        "carbohydrateContent": "42 g",
+        "cholesterolContent": "6 mg",
+        "fiberContent": "3 g",
+        "proteinContent": "8 g",
+        "saturatedFatContent": "4 g",
+        "sodiumContent": "646 mg",
+        "sugarContent": "4 g",
+        "fatContent": "20 g",
+        "unsaturatedFatContent": "0 g"
+    },
+    "prep_time": 15,
+    "site_name": "Allrecipes",
+    "title": "Mediterranean Flatbread",
+    "total_time": 30,
+    "yields": "4 servings"
+}

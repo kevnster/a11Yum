@@ -1,0 +1,79 @@
+{
+    "author": "JustJen",
+    "canonical_url": "https://www.allrecipes.com/recipe/229960/shrimp-scampi-with-pasta/",
+    "category": "Dinner",
+    "cook_time": 20,
+    "cuisine": "Italian",
+    "description": "Shrimp scampi pasta is a delicious dish of tender shrimp in a garlicky white wine butter sauce with linguine pasta for a quick and impressive dinner.",
+    "host": "allrecipes.com",
+    "image": "https://www.allrecipes.com/thmb/jiV_4f8vXFle1RdFLgd8-_31J3M=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/229960-shrimp-scampi-with-pasta-DDMFS-4x3-e065ddef4e6d44479d37b4523808cc23.jpg",
+    "ingredient_groups": [
+        {
+            "ingredients": [
+                "1 (16 ounce) package linguine pasta",
+                "2 tablespoons butter",
+                "2 tablespoons extra-virgin olive oil",
+                "2 shallots, finely diced",
+                "2 cloves garlic, minced",
+                "1 pinch red pepper flakes",
+                "1 pound shrimp, peeled and deveined",
+                "1 pinch kosher salt and freshly ground pepper",
+                "0.5 cup dry white wine",
+                "1 lemon, juiced",
+                "2 tablespoons butter",
+                "2 tablespoons extra-virgin olive oil",
+                "0.25 cup finely chopped fresh parsley leaves",
+                "1 teaspoon extra-virgin olive oil, or to taste"
+            ],
+            "purpose": null
+        }
+    ],
+    "ingredients": [
+        "1 (16 ounce) package linguine pasta",
+        "2 tablespoons butter",
+        "2 tablespoons extra-virgin olive oil",
+        "2 shallots, finely diced",
+        "2 cloves garlic, minced",
+        "1 pinch red pepper flakes",
+        "1 pound shrimp, peeled and deveined",
+        "1 pinch kosher salt and freshly ground pepper",
+        "0.5 cup dry white wine",
+        "1 lemon, juiced",
+        "2 tablespoons butter",
+        "2 tablespoons extra-virgin olive oil",
+        "0.25 cup finely chopped fresh parsley leaves",
+        "1 teaspoon extra-virgin olive oil, or to taste"
+    ],
+    "instructions": "Gather ingredients.\nBring a large pot of salted water to a boil; cook linguine in boiling water until nearly tender, 6 to 8 minutes. Drain.\nMelt 2 tablespoons butter with 2 tablespoons olive oil in a large skillet over medium heat.\nCook and stir shallots, garlic, and red pepper flakes in the hot butter and oil until shallots are translucent, 3 to 4 minutes.\nSeason shrimp with kosher salt and black pepper; add to the skillet and cook until pink, stirring occasionally, 2 to 3 minutes. Remove shrimp from skillet and keep warm.\nPour white wine and lemon juice into skillet and bring to a boil while scraping the browned bits of food off of the bottom of the skillet with a wooden spoon.\nMelt 2 tablespoons butter in skillet, stir 2 tablespoons olive oil into butter mixture, and bring to a simmer.\nToss linguine, shrimp, and parsley in the butter mixture until coated; season with salt and black pepper. Drizzle with 1 teaspoon olive oil to serve.\nServe hot and enjoy!",
+    "instructions_list": [
+        "Gather ingredients.",
+        "Bring a large pot of salted water to a boil; cook linguine in boiling water until nearly tender, 6 to 8 minutes. Drain.",
+        "Melt 2 tablespoons butter with 2 tablespoons olive oil in a large skillet over medium heat.",
+        "Cook and stir shallots, garlic, and red pepper flakes in the hot butter and oil until shallots are translucent, 3 to 4 minutes.",
+        "Season shrimp with kosher salt and black pepper; add to the skillet and cook until pink, stirring occasionally, 2 to 3 minutes. Remove shrimp from skillet and keep warm.",
+        "Pour white wine and lemon juice into skillet and bring to a boil while scraping the browned bits of food off of the bottom of the skillet with a wooden spoon.",
+        "Melt 2 tablespoons butter in skillet, stir 2 tablespoons olive oil into butter mixture, and bring to a simmer.",
+        "Toss linguine, shrimp, and parsley in the butter mixture until coated; season with salt and black pepper. Drizzle with 1 teaspoon olive oil to serve.",
+        "Serve hot and enjoy!"
+    ],
+    "language": "en",
+    "nutrients": {
+        "calories": "511 kcal",
+        "carbohydrateContent": "58 g",
+        "cholesterolContent": "135 mg",
+        "fiberContent": "4 g",
+        "proteinContent": "22 g",
+        "saturatedFatContent": "7 g",
+        "sodiumContent": "260 mg",
+        "sugarContent": "1 g",
+        "fatContent": "19 g",
+        "unsaturatedFatContent": "0 g"
+    },
+    "prep_time": 20,
+    "ratings": 4.6,
+    "ratings_count": 1605,
+    "site_name": "Allrecipes",
+    "title": "Shrimp Scampi with Pasta",
+    "total_time": 40,
+    "yields": "6 servings"
+}

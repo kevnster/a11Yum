@@ -1,0 +1,57 @@
+{
+    "author": "FoodieGeek",
+    "canonical_url": "https://www.allrecipes.com/recipe/158968/spinach-and-feta-turkey-burgers/",
+    "category": "Dinner",
+    "cook_time": 15,
+    "cuisine": "Mediterranean Inspired",
+    "description": "These spinach and feta turkey burgers are moist and easy to make in one bowl with simple ingredients, shaped into patties, and cooked on a hot grill.",
+    "host": "allrecipes.com",
+    "image": "https://www.allrecipes.com/thmb/cpf6Rics5oHGq1TZ1df5fEaImwM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/1360550-582be362ee99424bb4f363c2274a9d0d.jpg",
+    "ingredient_groups": [
+        {
+            "ingredients": [
+                "cooking spray",
+                "2 pounds ground turkey",
+                "1 (10 ounce) box frozen chopped spinach, thawed and squeezed dry",
+                "4 ounces feta cheese",
+                "2 large eggs, beaten",
+                "2 cloves garlic, minced"
+            ],
+            "purpose": null
+        }
+    ],
+    "ingredients": [
+        "cooking spray",
+        "2 pounds ground turkey",
+        "1 (10 ounce) box frozen chopped spinach, thawed and squeezed dry",
+        "4 ounces feta cheese",
+        "2 large eggs, beaten",
+        "2 cloves garlic, minced"
+    ],
+    "instructions": "Preheat an outdoor grill for medium-high heat and lightly oil the grate.\nMix together turkey, spinach, feta, eggs, and garlic in a large bowl until well combined; form into 8 patties.\nCook patties on the preheated grill on both sides until no longer pink in the center, 15 to 20 minutes. An instant-read thermometer inserted into the center of patties should read at least 165 degrees F (74 degrees C).",
+    "instructions_list": [
+        "Preheat an outdoor grill for medium-high heat and lightly oil the grate.",
+        "Mix together turkey, spinach, feta, eggs, and garlic in a large bowl until well combined; form into 8 patties.",
+        "Cook patties on the preheated grill on both sides until no longer pink in the center, 15 to 20 minutes. An instant-read thermometer inserted into the center of patties should read at least 165 degrees F (74 degrees C)."
+    ],
+    "language": "en",
+    "nutrients": {
+        "calories": "233 kcal",
+        "carbohydrateContent": "2 g",
+        "cholesterolContent": "143 mg",
+        "fiberContent": "1 g",
+        "proteinContent": "27 g",
+        "saturatedFatContent": "5 g",
+        "sodiumContent": "266 mg",
+        "sugarContent": "1 g",
+        "fatContent": "13 g",
+        "unsaturatedFatContent": "0 g"
+    },
+    "prep_time": 20,
+    "ratings": 4.6,
+    "ratings_count": 858,
+    "site_name": "Allrecipes",
+    "title": "Spinach and Feta Turkey Burgers",
+    "total_time": 35,
+    "yields": "8 servings"
+}
