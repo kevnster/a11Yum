@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useAuth0 } from 'react-native-auth0';
 import { Label } from '../../components/ui/label';
@@ -8,11 +8,19 @@ import * as Haptics from 'expo-haptics';
 import Colors from '../constants/Colors';
 import RefinedWelcomeOnboarding from './RefinedWelcomeOnboarding';
 import { useThemeStyles } from '../hooks/useThemeStyles';
+import { useAuth0Profile } from '../services/Auth0Service';
+import { useAuth0Management } from '../services/Auth0ManagementService';
 
 const SettingsScreen: React.FC = () => {
   const { user, clearSession } = useAuth0();
   const { theme, isDark, setTheme, colors } = useThemeStyles();
+  const { getUserProfile } = useAuth0Profile();
+  const { getUserProfile: getAuth0Profile } = useAuth0Management();
   const [showProfileEdit, setShowProfileEdit] = useState(false);
+
+  // User name state
+  const [userFirstName, setUserFirstName] = useState<string | null>(null);
+  const [userFullName, setUserFullName] = useState<string | null>(null);
 
   // Settings state
   const [notifications, setNotifications] = useState(true);
@@ -58,6 +66,99 @@ const SettingsScreen: React.FC = () => {
   const handleProfileEditComplete = () => {
     setShowProfileEdit(false);
   };
+
+  // Fetch user profile to get firstName and fullName (same pattern as HomeScreen)
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        
+        try {
+          // Try to get profile from Auth0 Management API
+          const auth0Profile = await getAuth0Profile();
+          console.log('📋 Retrieved profile from Auth0 Management service:', auth0Profile);
+          
+          if (auth0Profile?.firstName && auth0Profile.firstName.trim().length > 0) {
+            console.log('✅ Found firstName in Management service:', auth0Profile.firstName);
+            setUserFirstName(auth0Profile.firstName);
+            // Build full name
+            const lastName = auth0Profile.lastName || user?.family_name || user?.name?.split(' ').slice(1).join(' ') || '';
+            setUserFullName(`${auth0Profile.firstName} ${lastName}`.trim());
+            return;
+          }
+        } catch (error) {
+          console.log('❌ Error fetching from Management service:', error);
+        }
+        
+        // Try different ways to access user_metadata
+        console.log('🔍 Checking various user_metadata access patterns...');
+        
+        // Method 1: Direct user_metadata
+        if (user.user_metadata?.firstName) {
+          console.log('✅ Found firstName in user.user_metadata:', user.user_metadata.firstName);
+          setUserFirstName(user.user_metadata.firstName);
+          const lastName = user.user_metadata?.lastName || user?.family_name || user?.name?.split(' ').slice(1).join(' ') || '';
+          setUserFullName(`${user.user_metadata.firstName} ${lastName}`.trim());
+          return;
+        }
+        
+        // Method 2: Check if it's under a different property
+        if (user['https://myapp.example.com/user_metadata']?.firstName) {
+          console.log('✅ Found firstName in custom claim:', user['https://myapp.example.com/user_metadata'].firstName);
+          const firstName = user['https://myapp.example.com/user_metadata'].firstName;
+          setUserFirstName(firstName);
+          const lastName = user['https://myapp.example.com/user_metadata']?.lastName || user?.family_name || user?.name?.split(' ').slice(1).join(' ') || '';
+          setUserFullName(`${firstName} ${lastName}`.trim());
+          return;
+        }
+        
+        // Method 3: Check raw user object for any firstName
+        if (user.firstName) {
+          console.log('✅ Found firstName directly in user object:', user.firstName);
+          setUserFirstName(user.firstName);
+          const lastName = user?.family_name || user?.name?.split(' ').slice(1).join(' ') || '';
+          setUserFullName(`${user.firstName} ${lastName}`.trim());
+          return;
+        }
+        
+        // Fallback to Auth0 given_name (avoid name/nickname which might be email)
+        if (user?.given_name && !user.given_name.includes('@')) {
+          console.log('✅ Using Auth0 given_name:', user.given_name);
+          setUserFirstName(user.given_name);
+          const lastName = user?.family_name || user?.name?.split(' ').slice(1).join(' ') || '';
+          setUserFullName(`${user.given_name} ${lastName}`.trim());
+          return;
+        }
+        
+        console.log('⚠️ No valid firstName found in user object');
+        
+        // Final attempt: Try to extract from email or name if it looks like a real name
+        if (user.given_name && !user.given_name.includes('@') && user.given_name !== user.email) {
+          console.log('✅ Using Auth0 given_name as fallback:', user.given_name);
+          setUserFirstName(user.given_name);
+          setUserFullName(user.given_name);
+          return;
+        }
+        
+        // Extract potential first name from email username (before @)
+        if (user.email && user.email.includes('@')) {
+          const emailUsername = user.email.split('@')[0];
+          // Only use if it doesn't look like random characters
+          if (emailUsername.length >= 2 && !emailUsername.includes('.') && isNaN(Number(emailUsername))) {
+            console.log('✅ Using email username as firstName:', emailUsername);
+            setUserFirstName(emailUsername);
+            setUserFullName(emailUsername);
+            return;
+          }
+        }
+        
+        console.log('⚠️ No valid firstName found, using default');
+        setUserFirstName(null);
+        setUserFullName(null);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user, getAuth0Profile]);
 
   // Show profile editing screen if requested
   if (showProfileEdit) {
@@ -148,12 +249,12 @@ const SettingsScreen: React.FC = () => {
       <View style={[styles.profileSection, { backgroundColor: colors.card }]}>
         <View style={styles.avatarContainer}>
           <Text style={styles.avatarText}>
-            {(user?.given_name && !user.given_name.includes('@') ? user.given_name : user?.name?.split(' ')[0] || 'User').charAt(0).toUpperCase()}
+            {(userFirstName || 'User').charAt(0).toUpperCase()}
           </Text>
         </View>
         <View style={styles.userInfo}>
           <Text style={[styles.userName, { fontFamily: 'Geist-SemiBold', color: colors.text }]}>
-            {user?.given_name && !user.given_name.includes('@') ? user.given_name : user?.name?.split(' ')[0] || 'User'}
+            {userFullName || userFirstName || 'User'}
           </Text>
           <Text style={[styles.userEmail, { fontFamily: 'Geist', color: colors.textSecondary }]}>
             {user?.email || 'user@example.com'}
@@ -173,7 +274,6 @@ const SettingsScreen: React.FC = () => {
                     <Label
                       nativeID={setting.id}
                       style={[styles.settingLabel, { fontFamily: 'Geist-Medium', color: colors.text }]}
-                      onPress={() => setting.onCheckedChange(!setting.checked)}
                     >
                       {setting.label}
                     </Label>
