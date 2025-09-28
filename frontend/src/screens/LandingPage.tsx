@@ -234,7 +234,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           accessibilityRole="image"
         >
           <Image
-            source={require('../../assets/logo-removebg-preview.png')}
+            source={require('../../assets/animated_logo.gif')}
             style={styles.logo}
             resizeMode="contain"
             accessible={true}
