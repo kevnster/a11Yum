@@ -13,7 +13,9 @@ import { useAuth0Profile } from '../services/Auth0Service';
 import { useAuth0Management } from '../services/Auth0ManagementService';
 import GeminiService from '../services/GeminiService';
 import { useSavedRecipes } from '../contexts/SavedRecipesContext';
+import { useRecentRecipes } from '../contexts/RecentRecipesContext';
 import { useNavigation } from '../contexts/NavigationContext';
+import RecipeCarousel from '../components/RecipeCarousel';
 
 const HomeScreen: React.FC = () => {
   const { user, clearSession } = useAuth0();
@@ -22,6 +24,7 @@ const HomeScreen: React.FC = () => {
   const { getUserProfile } = useAuth0Profile();
   const { getUserProfile: getAuth0Profile } = useAuth0Management();
   const { savedRecipes: contextSavedRecipes, toggleFavorite } = useSavedRecipes();
+  const { recentRecipes, addRecentRecipe, isLoading: recentRecipesLoading } = useRecentRecipes();
   const { setRecipeDetailState, setGoBackFunction } = useNavigation();
   
   // Recipe navigation state
@@ -153,8 +156,18 @@ const HomeScreen: React.FC = () => {
   };
   
   // Use context for saved recipes
-  const recentRecipes = contextSavedRecipes.slice(0, 3); // Show only recent 3
+  const savedRecipesForDisplay = contextSavedRecipes.slice(0, 3); // Show only recent 3
   const hasGeneratedRecipes = recentRecipes.length > 0;
+
+  // Sync recent recipes with current favorite status
+  const syncedRecentRecipes = recentRecipes.map(recentRecipe => {
+    // Check if this recipe is currently in saved recipes
+    const savedVersion = contextSavedRecipes.find(saved => saved.id === recentRecipe.id);
+    return {
+      ...recentRecipe,
+      isFavorite: savedVersion ? savedVersion.isFavorite : false
+    };
+  });
 
   const handleRecipePress = (recipe: Recipe) => {
     console.log('🔄 Navigating to recipe:', recipe.title);
@@ -165,9 +178,18 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleFavoritePress = (recipeId: string) => {
-    const recipe = contextSavedRecipes.find(r => r.id === recipeId);
+    // Look in synced recent recipes since that's what the carousel displays
+    let recipe = syncedRecentRecipes.find(r => r.id === recipeId);
+    // If not found in recent recipes, look in saved recipes as fallback
+    if (!recipe) {
+      recipe = contextSavedRecipes.find(r => r.id === recipeId);
+    }
+    
     if (recipe) {
+      console.log('🔄 Toggling favorite for recipe:', recipe.title);
       toggleFavorite(recipe);
+    } else {
+      console.warn('⚠️ Recipe not found for favoriting:', recipeId);
     }
   };
 
@@ -205,6 +227,8 @@ const HomeScreen: React.FC = () => {
           setCurrentRecipeUrl(analysis.url);
           setRecipeDetailState(true, result.recipe.title, 'Home');
           setGoBackFunction(handleBackToHome);
+          // Add to recent recipes list
+          await addRecentRecipe(result.recipe);
         } else {
           showModal('Error', result.error || 'Failed to parse recipe from URL');
         }
@@ -218,6 +242,8 @@ const HomeScreen: React.FC = () => {
           setCurrentRecipeUrl(`generated:${message}`);
           setRecipeDetailState(true, result.recipe.title, 'Home');
           setGoBackFunction(handleBackToHome);
+          // Add to recent recipes list
+          await addRecentRecipe(result.recipe);
         } else {
           showModal('Error', result.error || 'Failed to generate recipe');
         }
@@ -305,14 +331,13 @@ const HomeScreen: React.FC = () => {
             <Text style={styles.sectionTitle}>Recent Recipes</Text>
           </View>
           
-          {recentRecipes.slice(0, 3).map((recipe) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              onPress={() => handleRecipePress(recipe)}
-              onFavoritePress={() => handleFavoritePress(recipe.id)}
-            />
-          ))}
+          <RecipeCarousel
+            recipes={syncedRecentRecipes}
+            onRecipePress={handleRecipePress}
+            onFavoritePress={handleFavoritePress}
+            isLoading={recentRecipesLoading}
+            emptyStateMessage="Generate your first recipe to see it here!"
+          />
         </View>
       )}
 

@@ -13,6 +13,7 @@ import RefinedLandingPage from './src/screens/RefinedLandingPage';
 import { UserStorage } from './src/utils/UserStorage';
 import { SavedRecipesProvider } from './src/contexts/SavedRecipesContext';
 import { NavigationProvider } from './src/contexts/NavigationContext';
+import { RecentRecipesProvider } from './src/contexts/RecentRecipesContext';
 
 interface User {
   name?: string;
@@ -239,7 +240,9 @@ const App: React.FC = () => {
         >
           <NavigationProvider>
             <SavedRecipesProvider>
-              <AppContent onUserLogout={() => setUserLoggedOut(true)} />
+              <RecentRecipesProvider>
+                <AppContent onUserLogout={() => setUserLoggedOut(true)} />
+              </RecentRecipesProvider>
             </SavedRecipesProvider>
           </NavigationProvider>
           <PortalHost />

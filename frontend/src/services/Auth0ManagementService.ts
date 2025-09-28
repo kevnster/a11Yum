@@ -405,10 +405,113 @@ export const useAuth0Management = () => {
     }
   };
 
+  // Save recent recipes to Auth0 user_metadata (last 5 generated recipes)
+  const saveRecentRecipes = async (recipes: Recipe[]): Promise<boolean> => {
+    if (!user) {
+      console.error('❌ No user found for recent recipes');
+      return false;
+    }
+
+    try {
+      console.log('🔄 Saving recent recipes to Auth0...');
+      
+      // Keep only the last 5 recipes
+      const recentRecipes = recipes.slice(-5);
+      console.log('📥 Saving', recentRecipes.length, 'recent recipes');
+      
+      const token = await getManagementToken();
+      if (!token) {
+        console.error('❌ Could not get management token for recent recipes');
+        return false;
+      }
+
+      const response = await fetch(`https://${AUTH0_DOMAIN}/api/v2/users/${encodeURIComponent(user.sub)}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_metadata: {
+            recentRecipes: recentRecipes,
+          }
+        }),
+      });
+
+      if (response.ok) {
+        console.log('✅ Recent recipes saved to Auth0 successfully');
+        return true;
+      } else if (response.status === 429) {
+        console.warn('⏳ Rate limit hit saving recent recipes, will retry later');
+        return false;
+      } else {
+        const error = await response.text();
+        console.error('❌ Error saving recent recipes to Auth0:', {
+          status: response.status,
+          error: error
+        });
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Error saving recent recipes:', error);
+      return false;
+    }
+  };
+
+  // Get recent recipes from Auth0 user_metadata
+  const getRecentRecipes = async (): Promise<Recipe[]> => {
+    if (!user) {
+      console.error('❌ No user found for recent recipes');
+      return [];
+    }
+
+    try {
+      console.log('🔄 Fetching recent recipes from Auth0...');
+      
+      const token = await getManagementToken();
+      if (!token) {
+        console.error('❌ Could not get management token for recent recipes');
+        return [];
+      }
+
+      const response = await fetch(`https://${AUTH0_DOMAIN}/api/v2/users/${encodeURIComponent(user.sub)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        const metadata = userData.user_metadata || {};
+        
+        console.log('📥 Retrieved recent recipes from Auth0:', metadata.recentRecipes?.length || 0, 'recipes');
+        
+        return metadata.recentRecipes || [];
+      } else if (response.status === 429) {
+        console.warn('⏳ Rate limit hit fetching recent recipes, returning empty array');
+        return [];
+      } else {
+        const error = await response.text();
+        console.error('❌ Error fetching recent recipes from Auth0:', {
+          status: response.status,
+          error: error
+        });
+        return [];
+      }
+    } catch (error) {
+      console.error('❌ Error getting recent recipes:', error);
+      return [];
+    }
+  };
+
   return {
     saveUserProfile,
     getUserProfile,
     saveSavedRecipes,
     getSavedRecipes,
+    saveRecentRecipes,
+    getRecentRecipes,
   };
 };
