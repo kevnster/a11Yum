@@ -1,12 +1,87 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import Colors from '../constants/Colors';
+import { useNavigation } from '../contexts/NavigationContext';
+import { useNavigation as useReactNavigation } from '@react-navigation/native';
 
 // Import screens
 import HomeScreen from '../screens/HomeScreen';
 import SavedRecipesScreen from '../screens/SavedRecipesScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+
+// Wrapper components that handle dynamic headers
+const HomeWrapper: React.FC = () => {
+  const { currentRecipeTitle, goBackFromRecipe, setActiveTab, isRecipeDetailForTab } = useNavigation();
+  const navigation = useReactNavigation();
+  
+  const isShowingRecipe = isRecipeDetailForTab('Home');
+
+  useEffect(() => {
+    setActiveTab('Home');
+  }, [setActiveTab]);
+
+  useEffect(() => {
+    console.log('🔧 HomeWrapper: updating header', { isShowingRecipe, currentRecipeTitle, hasGoBackFunction: !!goBackFromRecipe });
+    navigation.setOptions({
+      headerTitle: isShowingRecipe && currentRecipeTitle 
+        ? (currentRecipeTitle.length > 20 ? currentRecipeTitle.substring(0, 20) + '...' : currentRecipeTitle)
+        : 'a11Yum',
+      headerLeft: isShowingRecipe && goBackFromRecipe 
+        ? () => (
+            <TouchableOpacity 
+              onPress={() => {
+                console.log('🔧 HomeWrapper: back button pressed');
+                goBackFromRecipe();
+              }} 
+              style={styles.backButton}
+              accessibilityLabel="Go back"
+            >
+              <Text style={[styles.backArrow, { color: Colors.primary.orange }]}>←</Text>
+            </TouchableOpacity>
+          )
+        : undefined,
+    });
+  }, [isShowingRecipe, currentRecipeTitle, goBackFromRecipe, navigation]);
+
+  return <HomeScreen />;
+};
+
+const SavedWrapper: React.FC = () => {
+  const { currentRecipeTitle, goBackFromRecipe, setActiveTab, isRecipeDetailForTab } = useNavigation();
+  const navigation = useReactNavigation();
+  
+  const isShowingRecipe = isRecipeDetailForTab('SavedRecipes');
+
+  useEffect(() => {
+    setActiveTab('SavedRecipes');
+  }, [setActiveTab]);
+
+  useEffect(() => {
+    console.log('🔧 SavedWrapper: updating header', { isShowingRecipe, currentRecipeTitle, hasGoBackFunction: !!goBackFromRecipe });
+    navigation.setOptions({
+      headerTitle: isShowingRecipe && currentRecipeTitle 
+        ? (currentRecipeTitle.length > 20 ? currentRecipeTitle.substring(0, 20) + '...' : currentRecipeTitle)
+        : 'Saved Recipes',
+      headerLeft: isShowingRecipe && goBackFromRecipe 
+        ? () => (
+            <TouchableOpacity 
+              onPress={() => {
+                console.log('🔧 SavedWrapper: back button pressed');
+                goBackFromRecipe();
+              }} 
+              style={styles.backButton}
+              accessibilityLabel="Go back"
+            >
+              <Text style={[styles.backArrow, { color: Colors.primary.orange }]}>←</Text>
+            </TouchableOpacity>
+          )
+        : undefined,
+    });
+  }, [isShowingRecipe, currentRecipeTitle, goBackFromRecipe, navigation]);
+
+  return <SavedRecipesScreen />;
+};
 
 const Tab = createBottomTabNavigator();
 
@@ -94,7 +169,7 @@ const BottomTabNavigator = () => {
     >
       <Tab.Screen 
         name="Home" 
-        component={HomeScreen}
+        component={HomeWrapper}
         options={{
           title: 'Home',
           headerTitle: 'a11Yum',
@@ -102,7 +177,7 @@ const BottomTabNavigator = () => {
       />
       <Tab.Screen 
         name="SavedRecipes" 
-        component={SavedRecipesScreen}
+        component={SavedWrapper}
         options={{
           title: 'Saved',
           headerTitle: 'Saved Recipes',
@@ -113,7 +188,6 @@ const BottomTabNavigator = () => {
         component={SettingsScreen}
         options={{
           title: 'Settings',
-          headerTitle: 'Settings',
         }}
       />
     </Tab.Navigator>
@@ -133,6 +207,19 @@ const styles = StyleSheet.create({
   },
   activeTabIcon: {
     backgroundColor: `${Colors.primary.orange}15`,
+  },
+  backButton: {
+    paddingLeft: 16,
+    paddingVertical: 8,
+  },
+  backArrow: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  headerTitleText: {
+    color: Colors.text.primary,
+    fontSize: 18,
+    fontWeight: '600',
   },
 });
 

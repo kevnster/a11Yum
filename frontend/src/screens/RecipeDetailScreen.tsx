@@ -243,21 +243,6 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route, navigati
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top - 10, backgroundColor: colors.background }]}>
-        <TouchableOpacity style={styles.backArrow} onPress={() => navigation.goBack()}>
-          <Text style={[styles.backArrowText, { color: colors.text }]}>←</Text>
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Recipe</Text>
-        <TouchableOpacity onPress={() => {
-          console.log('🔄 Heart button pressed for recipe:', currentRecipe.title, 'Current favorite status:', currentRecipe.isFavorite);
-          // Pass the current recipe to toggleFavorite - the context will handle the state update
-          toggleFavorite(currentRecipe);
-        }}>
-          <Text style={styles.favoriteIcon}>{currentRecipe.isFavorite ? '❤️' : '🤍'}</Text>
-        </TouchableOpacity>
-      </View>
-
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {isLoading ? (
           /* Loading State */
@@ -274,7 +259,15 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route, navigati
           <>
         {/* Recipe Header */}
         <View style={styles.recipeHeader}>
-          <Text style={[styles.recipeTitle, { color: colors.text }]}>{currentRecipe.title}</Text>
+          <View style={styles.titleRow}>
+            <Text style={[styles.recipeTitle, { color: colors.text, flex: 1 }]}>{currentRecipe.title}</Text>
+            <TouchableOpacity onPress={() => {
+              console.log('🔄 Heart button pressed for recipe:', currentRecipe.title, 'Current favorite status:', currentRecipe.isFavorite);
+              toggleFavorite(currentRecipe);
+            }}>
+              <Text style={styles.favoriteIcon}>{currentRecipe.isFavorite ? '❤️' : '🤍'}</Text>
+            </TouchableOpacity>
+          </View>
           <Text style={[styles.recipeDescription, { color: colors.textSecondary }]}>
             {currentRecipe.description}
           </Text>
@@ -717,6 +710,54 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
     lineHeight: 20,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  backArrowInline: {
+    padding: 8,
+    marginRight: 8,
+  },
+  statusBarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  headerSpacer: {
+    flex: 1,
+  },
+  navigationHeader: {
+    backgroundColor: '#FFFFFF', // Colors.background.primary
+    borderBottomColor: '#E5E5E5', // Colors.neutral.mediumGray  
+    borderBottomWidth: 1,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+  },
+  backButton: {
+    padding: 8,
+  },
+  backButtonText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  headerTitleText: {
+    fontSize: 18,
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'center',
+  },
+  favoriteIconHeader: {
+    fontSize: 24,
+    padding: 8,
   },
 });
 

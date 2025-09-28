@@ -13,6 +13,7 @@ import { useAuth0Profile } from '../services/Auth0Service';
 import { useAuth0Management } from '../services/Auth0ManagementService';
 import GeminiService from '../services/GeminiService';
 import { useSavedRecipes } from '../contexts/SavedRecipesContext';
+import { useNavigation } from '../contexts/NavigationContext';
 
 const HomeScreen: React.FC = () => {
   const { user, clearSession } = useAuth0();
@@ -21,6 +22,7 @@ const HomeScreen: React.FC = () => {
   const { getUserProfile } = useAuth0Profile();
   const { getUserProfile: getAuth0Profile } = useAuth0Management();
   const { savedRecipes: contextSavedRecipes, toggleFavorite } = useSavedRecipes();
+  const { setRecipeDetailState, setGoBackFunction } = useNavigation();
   
   // Recipe navigation state
   const [currentRecipeUrl, setCurrentRecipeUrl] = useState<string | null>(null);
@@ -158,6 +160,8 @@ const HomeScreen: React.FC = () => {
     console.log('🔄 Navigating to recipe:', recipe.title);
     setCurrentRecipe(recipe);
     setCurrentRecipeUrl(`saved:${recipe.id}`);
+    setRecipeDetailState(true, recipe.title, 'Home');
+    setGoBackFunction(handleBackToHome);
   };
 
   const handleFavoritePress = (recipeId: string) => {
@@ -176,8 +180,11 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleBackToHome = () => {
+    console.log('🔧 HomeScreen: handleBackToHome called');
     setCurrentRecipeUrl(null);
     setCurrentRecipe(null);
+    setRecipeDetailState(false);
+    setGoBackFunction(null);
   };
 
   const handleLLMMessage = async (message: string) => {
@@ -196,6 +203,8 @@ const HomeScreen: React.FC = () => {
         if (result.success) {
           setCurrentRecipe(result.recipe);
           setCurrentRecipeUrl(analysis.url);
+          setRecipeDetailState(true, result.recipe.title, 'Home');
+          setGoBackFunction(handleBackToHome);
         } else {
           showModal('Error', result.error || 'Failed to parse recipe from URL');
         }
@@ -207,6 +216,8 @@ const HomeScreen: React.FC = () => {
         if (result.success) {
           setCurrentRecipe(result.recipe);
           setCurrentRecipeUrl(`generated:${message}`);
+          setRecipeDetailState(true, result.recipe.title, 'Home');
+          setGoBackFunction(handleBackToHome);
         } else {
           showModal('Error', result.error || 'Failed to generate recipe');
         }

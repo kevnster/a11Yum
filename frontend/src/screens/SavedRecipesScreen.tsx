@@ -5,10 +5,12 @@ import RecipeCard from '../components/RecipeCard';
 import styles from '../css/SavedRecipesScreen.styles';
 import { Recipe, RecipeModel } from '../types/Recipe';
 import { useSavedRecipes } from '../contexts/SavedRecipesContext';
+import { useNavigation } from '../contexts/NavigationContext';
 import RecipeDetailScreen from './RecipeDetailScreen';
 
 const SavedRecipesScreen: React.FC = () => {
   const { savedRecipes, toggleFavorite, isLoading } = useSavedRecipes();
+  const { setRecipeDetailState, setGoBackFunction } = useNavigation();
 
   // Recipe navigation state
   const [currentRecipeUrl, setCurrentRecipeUrl] = useState<string | null>(null);
@@ -29,11 +31,15 @@ const SavedRecipesScreen: React.FC = () => {
     console.log('🔄 Navigating to saved recipe:', recipe.title);
     setCurrentRecipe(recipe);
     setCurrentRecipeUrl(`saved:${recipe.id}`);
+    setRecipeDetailState(true, recipe.title, 'SavedRecipes');
+    setGoBackFunction(handleBackToSaved);
   };
 
   const handleBackToSaved = () => {
     setCurrentRecipeUrl(null);
     setCurrentRecipe(null);
+    setRecipeDetailState(false);
+    setGoBackFunction(null);
   };
 
     const handleFavoritePress = (recipeId: string) => {
