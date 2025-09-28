@@ -66,8 +66,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       })
     ).start();
 
-    // Note: Removed blinking cursor animation as we now use mouse interaction
-
     // Smooth mouse interaction animation
     const startMouseAnimation = () => {
       const typingText = 'ccessibilit';
@@ -120,44 +118,44 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                 setCurrentTypedText(typingText.substring(0, index + 1));
                 animationRef.current = setTimeout(() => typeCharacter(index + 1), 120);
               } else {
-                // Typing complete
-                setTimeout(() => {
-                  // Step 4: Mouse fades out and moves away
-                  Animated.parallel([
-                    Animated.timing(mouseFadeAnim, {
-                      toValue: 0,
-                      duration: 800,
+                // Typing complete -> sweep then perform character-by-character deletion (backspace effect)
+                animationRef.current = setTimeout(() => {
+                  Animated.sequence([
+                    Animated.timing(mouseXAnim, {
+                      toValue: 100,
+                      duration: 700,
                       useNativeDriver: true,
                     }),
                     Animated.timing(mouseXAnim, {
-                      toValue: 100,
-                      duration: 1500,
-                      useNativeDriver: true,
-                    }),
-                    Animated.timing(mouseYAnim, {
-                      toValue: 50,
-                      duration: 1500,
+                      toValue: 0,
+                      duration: 700,
                       useNativeDriver: true,
                     }),
                   ]).start(() => {
-                    setShowMouse(false);
-                    
-                    // Step 5: Reset after pause
-                    setTimeout(() => {
-                      setIsSelecting(false);
-                      setIsTyping(false);
-                      setCurrentTypedText('');
-                      Animated.timing(selectionAnim, {
-                        toValue: 0,
-                        duration: 500,
-                        useNativeDriver: false,
-                      }).start(() => {
-                        // Wait and repeat
-                        animationRef.current = setTimeout(animateSequence, 3000);
-                      });
-                    }, 2000);
+                    // small pause then delete characters one-by-one
+                    animationRef.current = setTimeout(() => {
+                      const deleteChar = (len: number) => {
+                        if (len > 0) {
+                          setCurrentTypedText(typingText.substring(0, len - 1));
+                          // slightly faster delete than typing for natural feel
+                          animationRef.current = setTimeout(() => deleteChar(len - 1), 80);
+                        } else {
+                          // finished deletion -> remove selection and restart
+                          setIsSelecting(false);
+                          setIsTyping(false);
+                          Animated.timing(selectionAnim, {
+                            toValue: 0,
+                            duration: 360,
+                            useNativeDriver: false,
+                          }).start(() => {
+                            animationRef.current = setTimeout(animateSequence, 700);
+                          });
+                        }
+                      };
+                      deleteChar(typingText.length);
+                    }, 300);
                   });
-                }, 1000);
+                }, 600);
               }
             };
             
@@ -246,25 +244,30 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           <View style={styles.titleWrapper}>
             <Text style={styles.title} accessible={true} accessibilityRole="text">
               a
-              {!isTyping && !isSelecting && (
-                <Text style={styles.normalText}>11</Text>
-              )}
-              {isSelecting && !isTyping && (
-                <Animated.View style={[
-                  styles.selectionOverlay,
-                  {
-                    backgroundColor: selectionAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['transparent', 'rgba(33, 150, 243, 0.3)'],
-                    }),
-                  }
-                ]}>
-                  <Text style={styles.selectedText}>11</Text>
-                </Animated.View>
-              )}
-              {isTyping && (
-                <Text style={styles.typedText}>{currentTypedText}</Text>
-              )}
+              {/* Dynamic fragment (no minWidth). Deletion animation prevents abrupt collapse. */}
+              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                {!isTyping && !isSelecting && (
+                  <Text style={[styles.normalText, { textAlign: 'center' }]}>11</Text>
+                )}
+                {isSelecting && !isTyping && (
+                  <Animated.View style={[
+                    styles.selectionOverlay,
+                    {
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: selectionAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['transparent', 'rgba(33, 150, 243, 0.3)'],
+                      }),
+                    }
+                  ]}>
+                    <Text style={[styles.selectedText, { textAlign: 'center' }]}>11</Text>
+                  </Animated.View>
+                )}
+                {isTyping && (
+                  <Text style={[styles.typedText, { textAlign: 'center' }]}>{currentTypedText}</Text>
+                )}
+              </View>
               Yum
             </Text>
             
@@ -283,7 +286,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                   ],
                 },
               ]}>
-                <Text style={styles.mouseText}>↖</Text>
+                <Image
+                  source={require("../../assets/cursor.png")}
+                  style={{ width: 20, height: 20 }}
+                  resizeMode="contain"
+                />
               </Animated.View>
             )}
           </View>
@@ -304,7 +311,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           },
         ]}
         accessible={true}
-        accessibilityRole="region"
+        accessibilityRole="image"
         accessibilityLabel="Get started section"
       >
         <TouchableOpacity
