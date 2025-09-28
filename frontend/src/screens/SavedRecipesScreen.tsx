@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, TextInput, FlatList, TouchableWithoutFeedback } from 'react-native';
 import Colors from '../constants/Colors';
 import RecipeCard from '../components/RecipeCard';
 import styles from '../css/SavedRecipesScreen.styles';
@@ -16,16 +16,83 @@ const SavedRecipesScreen: React.FC = () => {
   const [currentRecipeUrl, setCurrentRecipeUrl] = useState<string | null>(null);
   const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
   const [filterTag, setFilterTag] = useState<string | null>(null);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
 
   // Get all unique dietary tags from saved recipes
   const allTags = Array.from(
     new Set(savedRecipes.flatMap(recipe => recipe.dietaryTags))
   ).sort();
 
-  // Filter recipes based on selected tag
-  const filteredRecipes = filterTag
-    ? savedRecipes.filter(recipe => recipe.dietaryTags.includes(filterTag))
-    : savedRecipes;
+  // Filter recipes based on selected tag and search query
+  const filteredRecipes = useMemo(() => {
+    let recipes = savedRecipes;
+    
+    // Apply tag filter
+    if (filterTag) {
+      recipes = recipes.filter(recipe => recipe.dietaryTags.includes(filterTag));
+    }
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      recipes = recipes.filter(recipe => 
+        recipe.title.toLowerCase().includes(query) ||
+        recipe.description.toLowerCase().includes(query) ||
+        recipe.ingredients.some(ingredient => 
+          ingredient.name.toLowerCase().includes(query)
+        ) ||
+        recipe.dietaryTags.some(tag => 
+          tag.toLowerCase().includes(query)
+        ) ||
+        recipe.accessibilityTags.some(tag => 
+          tag.toLowerCase().includes(query)
+        )
+      );
+    }
+    
+    return recipes;
+  }, [savedRecipes, filterTag, searchQuery]);
+
+  // Generate search suggestions
+  const searchSuggestions = useMemo(() => {
+    if (!searchQuery.trim() || searchQuery.length < 2) return [];
+    
+    const query = searchQuery.toLowerCase();
+    const suggestions = new Set<string>();
+    
+    savedRecipes.forEach(recipe => {
+      // Add matching recipe titles
+      if (recipe.title.toLowerCase().includes(query)) {
+        suggestions.add(recipe.title);
+      }
+      
+      // Add matching ingredients
+      recipe.ingredients.forEach(ingredient => {
+        if (ingredient.name.toLowerCase().includes(query)) {
+          suggestions.add(ingredient.name);
+        }
+      });
+      
+      // Add matching dietary tags
+      recipe.dietaryTags.forEach(tag => {
+        if (tag.toLowerCase().includes(query)) {
+          suggestions.add(tag);
+        }
+      });
+      
+      // Add matching accessibility tags
+      recipe.accessibilityTags.forEach(tag => {
+        if (tag.toLowerCase().includes(query)) {
+          suggestions.add(tag);
+        }
+      });
+    });
+    
+    return Array.from(suggestions).slice(0, 5); // Limit to 5 suggestions
+  }, [searchQuery, savedRecipes]);
 
   const handleRecipePress = (recipe: Recipe) => {
     console.log('🔄 Navigating to saved recipe:', recipe.title);
@@ -66,6 +133,21 @@ const SavedRecipesScreen: React.FC = () => {
     setFilterTag(filterTag === tag ? null : tag);
   };
 
+  const handleSearchChange = (text: string) => {
+    setSearchQuery(text);
+    setShowSuggestions(text.length > 0);
+  };
+
+  const handleSuggestionPress = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setShowSuggestions(false);
+  };
+
   const hasSavedRecipes = savedRecipes.length > 0;
 
   // If we have a recipe selected, show the RecipeDetailScreen
@@ -79,9 +161,49 @@ const SavedRecipesScreen: React.FC = () => {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <TouchableWithoutFeedback onPress={() => setShowSuggestions(false)}>
+      <ScrollView style={styles.container}>
       {hasSavedRecipes ? (
         <>
+          {/* Search Bar */}
+          <View style={styles.searchSection}>
+            <View style={styles.searchContainer}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search recipes, ingredients, or dietary tags..."
+                placeholderTextColor="#999"
+                value={searchQuery}
+                onChangeText={handleSearchChange}
+                onFocus={() => setShowSuggestions(searchQuery.length > 0)}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={clearSearch}
+                >
+                  <Text style={styles.clearButtonText}>×</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            
+            {/* Search Suggestions */}
+            {showSuggestions && searchSuggestions.length > 0 && (
+              <View style={styles.suggestionsContainer}>
+                {searchSuggestions.map((suggestion, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.suggestionItem}
+                    onPress={() => handleSuggestionPress(suggestion)}
+                  >
+                    <Text style={styles.suggestionText}>{suggestion}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+
           {/* Filter Section */}
           <View style={styles.filtersSection}>
             <Text style={styles.filtersTitle}>Filter by dietary preference:</Text>
@@ -128,6 +250,7 @@ const SavedRecipesScreen: React.FC = () => {
           <View style={styles.resultsSection}>
             <Text style={styles.resultsText}>
               {filteredRecipes.length} recipe{filteredRecipes.length !== 1 ? 's' : ''}
+              {searchQuery && ` matching "${searchQuery}"`}
               {filterTag && ` with "${filterTag}"`}
             </Text>
           </View>
@@ -200,7 +323,8 @@ const SavedRecipesScreen: React.FC = () => {
           </View>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </TouchableWithoutFeedback>
   );
 };
 

@@ -139,6 +139,71 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.text.secondary,
   },
+  // Search styles
+  searchSection: {
+    padding: 20,
+    paddingBottom: 8,
+  },
+  searchContainer: {
+    position: 'relative',
+    backgroundColor: Colors.background.primary,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: Colors.neutral.mediumGray,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: Colors.text.primary,
+    paddingRight: 40, // Make room for clear button
+  },
+  clearButton: {
+    position: 'absolute',
+    right: 16,
+    width: 24,
+    height: 24,
+    backgroundColor: Colors.neutral.mediumGray,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  clearButtonText: {
+    fontSize: 18,
+    color: Colors.background.primary,
+    fontWeight: 'bold',
+  },
+  suggestionsContainer: {
+    marginTop: 8,
+    backgroundColor: Colors.background.primary,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.neutral.lightGray,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    maxHeight: 200,
+  },
+  suggestionItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.neutral.lightGray,
+  },
+  suggestionText: {
+    fontSize: 15,
+    color: Colors.text.primary,
+  },
 });
 
 export default styles;
