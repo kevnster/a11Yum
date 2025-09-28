@@ -137,26 +137,43 @@ const RefinedWelcomeOnboarding: React.FC<RefinedWelcomeOnboardingProps> = ({ onC
       };
 
       try {
-        // Test Auth0 connection in console logs
+        console.log('🔄 Starting profile save process...');
+        console.log('👤 User info:', { sub: user?.sub, email: user?.email });
+        console.log('📋 Profile data to save:', JSON.stringify(userProfile, null, 2));
         
         // Save to Auth0 first, then local storage as backup
+        console.log('🔄 Attempting to save to Auth0...');
         const auth0Success = await saveUserProfile(userProfile);
+        console.log('📥 Auth0 save result:', auth0Success);
+        
         if (auth0Success) {
           console.log('✅ Profile saved to Auth0 successfully');
         } else {
-          console.log('❌ Failed to save to Auth0, using local storage');
+          console.log('❌ Failed to save to Auth0, using local storage only');
         }
         
         // Always save locally as backup
+        console.log('💾 Saving to local storage...');
         await UserStorage.saveUserProfile(userProfile);
         await UserStorage.markProfileSetupCompleted();
+        console.log('✅ Profile saved locally');
         
+        console.log('✅ Profile save process completed');
         onComplete();
       } catch (error) {
-        console.error('Error saving profile:', error);
+        console.error('❌ Critical error during profile save:', error);
+        console.error('📋 Error details:', JSON.stringify(error, null, 2));
+        
         // Still save locally even if Auth0 fails
-        await UserStorage.saveUserProfile(userProfile);
-        await UserStorage.markProfileSetupCompleted();
+        console.log('💾 Fallback: Saving to local storage only...');
+        try {
+          await UserStorage.saveUserProfile(userProfile);
+          await UserStorage.markProfileSetupCompleted();
+          console.log('✅ Local storage save successful');
+        } catch (localError) {
+          console.error('❌ Even local storage failed:', localError);
+        }
+        
         onComplete();
       }
     }

@@ -124,6 +124,15 @@ export const useAuth0Management = () => {
           statusText: response.statusText,
           error: error
         });
+        
+        // If user doesn't exist (404), it means they were deleted
+        // The user should log out and log back in to recreate their profile
+        if (response.status === 404) {
+          console.error('🚨 USER NOT FOUND: The user account was deleted from Auth0.');
+          console.error('💡 SOLUTION: Please log out and log back in to recreate your account.');
+          console.error('🔍 User ID that failed:', user.sub);
+        }
+        
         return false;
       }
     } catch (error) {

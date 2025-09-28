@@ -44,37 +44,51 @@ const HomeScreen: React.FC = () => {
     }
   }, [modalVisible]);
 
+  // Helper function to get Management API token
+  const getManagementToken = async (): Promise<string> => {
+    const response = await fetch(`https://dev-jhskl14nw5eonveg.us.auth0.com/oauth/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: 'qtnrl9hS8FVSFqCxngFlRuG5210Qg7Kr',
+        client_secret: 'VqT5D3DBYcHLCPayCRnUFjElOinxWNnmrUATk8dKM6OHBQeHpBtYbbmhzupm699T',
+        audience: 'https://dev-jhskl14nw5eonveg.us.auth0.com/api/v2/',
+        grant_type: 'client_credentials'
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to get management token');
+    }
+    
+    const data = await response.json();
+    return data.access_token;
+  };
+
   // Fetch user profile to get firstName
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (user) {
         
         try {
-          // Try Management API first (more reliable for user_metadata)
+          // Try to get profile from Auth0 Management API
           const auth0Profile = await getAuth0Profile();
-          console.log('📋 Retrieved profile from Auth0 Management API:', auth0Profile);
+          console.log('📋 Retrieved profile from Auth0 Management service:', auth0Profile);
           
-          if (auth0Profile?.firstName) {
-            console.log('✅ Found firstName in Management API profile:', auth0Profile.firstName);
+          if (auth0Profile?.firstName && auth0Profile.firstName.trim().length > 0) {
+            console.log('✅ Found firstName in Management service:', auth0Profile.firstName);
             setUserFirstName(auth0Profile.firstName);
             return;
           }
-          
-          // Fallback to regular service
-          const profile = await getUserProfile();
-          console.log('📋 Retrieved profile from Auth0 Service:', profile);
-          
-          if (profile?.firstName) {
-            console.log('✅ Found firstName in service profile:', profile.firstName);
-            setUserFirstName(profile.firstName);
-            return;
-          }
         } catch (error) {
-          console.log('❌ Error fetching user profile:', error);
+          console.log('❌ Error fetching from Management service:', error);
         }
         
         // Try different ways to access user_metadata
         console.log('🔍 Checking various user_metadata access patterns...');
+        console.log('🔍 Full user object structure:', JSON.stringify(user, null, 2));
+        console.log('🔍 Available user properties:', Object.keys(user));
+        console.log('🔍 user.user_metadata exists?', !!user.user_metadata);
         
         // Method 1: Direct user_metadata
         if (user.user_metadata?.firstName) {
@@ -104,13 +118,33 @@ const HomeScreen: React.FC = () => {
           return;
         }
         
+        console.log('⚠️ No valid firstName found in user object');
+        
+        // Final attempt: Try to extract from email or name if it looks like a real name
+        if (user.given_name && !user.given_name.includes('@') && user.given_name !== user.email) {
+          console.log('✅ Using Auth0 given_name as fallback:', user.given_name);
+          setUserFirstName(user.given_name);
+          return;
+        }
+        
+        // Extract potential first name from email username (before @)
+        if (user.email && user.email.includes('@')) {
+          const emailUsername = user.email.split('@')[0];
+          // Only use if it doesn't look like random characters
+          if (emailUsername.length >= 2 && !emailUsername.includes('.') && isNaN(Number(emailUsername))) {
+            console.log('✅ Using email username as firstName:', emailUsername);
+            setUserFirstName(emailUsername);
+            return;
+          }
+        }
+        
         console.log('⚠️ No valid firstName found, using default');
         setUserFirstName(null);
       }
     };
 
     fetchUserProfile();
-  }, [user, getUserProfile]);
+  }, [user]);
 
   const showModal = (title: string, message: string, onConfirm?: () => void) => {
     setModalTitle(title);
@@ -214,7 +248,7 @@ const HomeScreen: React.FC = () => {
             styles.welcomeText,
             { fontFamily: 'Geist-SemiBold', color: colors.text }
           ]}>
-            Welcome back, {user?.given_name && !user.given_name.includes('@') ? user.given_name : user?.name?.split(' ')[0] || 'Chef'}! 👋
+            Welcome back, {userFirstName || 'Chef'}! 👋
           </Text>
           <Text style={[
             styles.welcomeSubtext,
