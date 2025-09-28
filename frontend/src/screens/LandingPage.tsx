@@ -37,34 +37,39 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
   const mouseFadeAnim = useRef(new Animated.Value(0)).current;
   const selectionAnim = useRef(new Animated.Value(0)).current;
 
-  useLayoutEffect(() => {
-    // Start animations on mount - use useLayoutEffect to avoid React 19 scheduling issues
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]).start();
+  useEffect(() => {
+    // Start animations on mount - use useEffect to avoid React 19 scheduling issues
+    const startAnimations = () => {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
 
-    // Continuous rotation for the logo
-    Animated.loop(
-      Animated.timing(rotateAnim, {
-        toValue: 1,
-        duration: 20000,
-        useNativeDriver: true,
-      })
-    ).start();
+      // Continuous rotation for the logo
+      Animated.loop(
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 20000,
+          useNativeDriver: true,
+        })
+      ).start();
+    };
+
+    // Delay initial animations to avoid scheduling conflicts
+    const initialTimer = setTimeout(startAnimations, 100);
 
     // Smooth mouse interaction animation
     const startMouseAnimation = () => {
@@ -168,16 +173,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       animationRef.current = setTimeout(animateSequence, 2000);
     };
     
-    startMouseAnimation();
+    const mouseTimer = setTimeout(startMouseAnimation, 500);
 
     // Announce page content for screen readers
-    AccessibilityInfo.announceForAccessibility('Welcome to a11Yum - Accessible Recipe Generation');
-  }, []);
+    const announceTimer = setTimeout(() => {
+      AccessibilityInfo.announceForAccessibility('Welcome to a11Yum - Accessible Recipe Generation');
+    }, 200);
 
-  // Separate effect for mouse animation to avoid React 19 scheduling conflicts
-  useEffect(() => {
-    // Cleanup function to prevent memory leaks
     return () => {
+      clearTimeout(initialTimer);
+      clearTimeout(mouseTimer);
+      clearTimeout(announceTimer);
       if (animationRef.current) {
         clearTimeout(animationRef.current);
       }
@@ -201,7 +207,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
       accessible={true}
-      accessibilityRole="main"
       accessibilityLabel="Landing page for a11Yum recipe generation app"
     >
       {/* Header Section */}
@@ -214,7 +219,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           },
         ]}
         accessible={true}
-        accessibilityRole="header"
         accessibilityLabel="App header with logo and title"
       >
         <Animated.View
@@ -242,34 +246,32 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
         
         <View style={styles.titleContainer}>
           <View style={styles.titleWrapper}>
-            <Text style={styles.title} accessible={true} accessibilityRole="text">
-              a
+            <View style={{ flexDirection: 'row', alignItems: 'baseline' }} accessible={true} accessibilityRole="text">
+              <Text style={styles.title}>a</Text>
               {/* Dynamic fragment (no minWidth). Deletion animation prevents abrupt collapse. */}
-              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <View>
                 {!isTyping && !isSelecting && (
-                  <Text style={[styles.normalText, { textAlign: 'center' }]}>11</Text>
+                  <Text style={styles.normalText}>11</Text>
                 )}
                 {isSelecting && !isTyping && (
                   <Animated.View style={[
                     styles.selectionOverlay,
                     {
-                      alignItems: 'center',
-                      justifyContent: 'center',
                       backgroundColor: selectionAnim.interpolate({
                         inputRange: [0, 1],
                         outputRange: ['transparent', 'rgba(33, 150, 243, 0.3)'],
                       }),
                     }
                   ]}>
-                    <Text style={[styles.selectedText, { textAlign: 'center' }]}>11</Text>
+                    <Text style={styles.selectedText}>11</Text>
                   </Animated.View>
                 )}
                 {isTyping && (
-                  <Text style={[styles.typedText, { textAlign: 'center' }]}>{currentTypedText}</Text>
+                  <Text style={styles.typedText}>{currentTypedText}</Text>
                 )}
               </View>
-              Yum
-            </Text>
+              <Text style={styles.title}>Yum</Text>
+            </View>
             
             {showMouse && (
               <Animated.View style={[
@@ -311,7 +313,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           },
         ]}
         accessible={true}
-        accessibilityRole="image"
         accessibilityLabel="Get started section"
       >
         <TouchableOpacity

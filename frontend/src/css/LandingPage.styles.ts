@@ -20,8 +20,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logo: {
-    width: 120,
-    height: 120,
+    width: 480,
+    height: 480,
   },
   titleContainer: {
     alignItems: 'center',
@@ -62,8 +62,8 @@ const styles = StyleSheet.create({
   },
   mouseCursor: {
     position: 'absolute',
-    top: 10,
-    left: 30, // Position over the "11"
+    top: 15, // Adjust vertical position to be more centered
+    left: 21, // Position dead center between the "11" characters
     zIndex: 10,
     alignItems: 'center',
     justifyContent: 'center',
