@@ -69,6 +69,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  llmInputContainer: {
+    width: '100%',
+    marginTop: 8,
+  },
   recipesSection: {
     marginBottom: 20,
   },

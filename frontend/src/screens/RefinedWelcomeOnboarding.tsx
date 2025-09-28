@@ -8,6 +8,7 @@ import {
   Animated,
   Image,
   SafeAreaView,
+  TextInput,
 } from 'react-native';
 import { useAuth0 } from 'react-native-auth0';
 import { UserStorage } from '../utils/UserStorage';
@@ -15,13 +16,18 @@ import { UserProfile } from '../services/Auth0Service';
 import { useAuth0Management } from '../services/Auth0ManagementService';
 import { useAuth0Profile } from '../services/Auth0Service';
 import Colors from '../constants/Colors';
+import { Progress } from '../components/ui/progress';
 
 interface OnboardingData {
+  firstName: string;
+  lastName: string;
   dietaryNeeds: string[];
   cookingPreferences: string[];
   energyLevel: string;
   instructionStyle: string;
   kitchenTools: string[];
+  accessibilityNeeds: string[];
+  favoriteCuisines: string[];
 }
 
 interface RefinedWelcomeOnboardingProps {
@@ -35,11 +41,15 @@ const RefinedWelcomeOnboarding: React.FC<RefinedWelcomeOnboardingProps> = ({ onC
   const { getUserProfile } = useAuth0Profile();
   const [currentStep, setCurrentStep] = useState(1);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
+    firstName: '',
+    lastName: '',
     dietaryNeeds: [],
     cookingPreferences: [],
     energyLevel: '',
     instructionStyle: '',
     kitchenTools: [],
+    accessibilityNeeds: [],
+    favoriteCuisines: [],
   });
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -76,6 +86,8 @@ const RefinedWelcomeOnboarding: React.FC<RefinedWelcomeOnboardingProps> = ({ onC
             );
 
             setOnboardingData({
+              firstName: existingProfile.firstName || '',
+              lastName: existingProfile.lastName || '',
               dietaryNeeds: existingProfile.dietaryRestrictions,
               cookingPreferences: existingProfile.accessibilityNeeds.filter(need =>
                 !need.includes('Energy Level:') && !need.includes('Instructions:')
@@ -83,6 +95,8 @@ const RefinedWelcomeOnboarding: React.FC<RefinedWelcomeOnboardingProps> = ({ onC
               energyLevel: energyMatch ? energyMatch.split(': ')[1] : '',
               instructionStyle: instructionMatch ? instructionMatch.split(': ')[1] : '',
               kitchenTools: existingProfile.favoriteCuisines,
+              accessibilityNeeds: [],
+              favoriteCuisines: [],
             });
           }
         } catch (error) {
@@ -103,30 +117,34 @@ const RefinedWelcomeOnboarding: React.FC<RefinedWelcomeOnboardingProps> = ({ onC
   };
 
   const handleNext = async () => {
-    if (currentStep < 5) {
+    if (currentStep < 8) {
       setCurrentStep(currentStep + 1);
     } else {
       // Save onboarding data
       const userProfile: UserProfile = {
-        firstName: user?.given_name || user?.name?.split(' ')[0] || '',
-        lastName: user?.family_name || user?.name?.split(' ').slice(1).join(' ') || '',
+        firstName: onboardingData.firstName,
+        lastName: onboardingData.lastName || user?.family_name || user?.name?.split(' ').slice(1).join(' ') || '',
         dietaryRestrictions: onboardingData.dietaryNeeds,
         accessibilityNeeds: [
           ...onboardingData.cookingPreferences,
+          ...onboardingData.accessibilityNeeds,
           `Energy Level: ${onboardingData.energyLevel}`,
-          `Instructions: ${onboardingData.instructionStyle}`
+          `Instructions: ${onboardingData.instructionStyle}`,
+          `Kitchen Tools: ${onboardingData.kitchenTools.join(', ')}`
         ],
-        favoriteCuisines: onboardingData.kitchenTools,
+        favoriteCuisines: onboardingData.favoriteCuisines,
         profileSetupCompleted: true,
       };
 
       try {
+        // Test Auth0 connection in console logs
+        
         // Save to Auth0 first, then local storage as backup
         const auth0Success = await saveUserProfile(userProfile);
         if (auth0Success) {
-          console.log('Profile saved to Auth0 successfully');
+          console.log('✅ Profile saved to Auth0 successfully');
         } else {
-          console.log('Failed to save to Auth0, using local storage');
+          console.log('❌ Failed to save to Auth0, using local storage');
         }
         
         // Always save locally as backup
@@ -155,13 +173,19 @@ const RefinedWelcomeOnboarding: React.FC<RefinedWelcomeOnboardingProps> = ({ onC
       case 1:
         return true; // Welcome step
       case 2:
-        return true; // Dietary needs (optional)
+        return onboardingData.firstName.trim().length > 0; // First name (required)
       case 3:
-        return true; // Cooking preferences (optional)
+        return true; // Dietary needs (optional)
       case 4:
-        return onboardingData.energyLevel && onboardingData.instructionStyle;
+        return true; // Cooking preferences (optional)
       case 5:
+        return onboardingData.energyLevel && onboardingData.instructionStyle;
+      case 6:
         return true; // Kitchen tools (optional)
+      case 7:
+        return true; // Accessibility needs (optional)
+      case 8:
+        return true; // Favorite cuisines (optional)
       default:
         return false;
     }
@@ -201,6 +225,38 @@ const RefinedWelcomeOnboarding: React.FC<RefinedWelcomeOnboardingProps> = ({ onC
       case 2:
         return (
           <View style={styles.stepContainer}>
+            <Text style={[styles.stepTitle, { fontFamily: 'Geist-Bold' }]}>Tell us your name 👋</Text>
+            <Text style={[styles.stepDescription, { fontFamily: 'Geist' }]}>
+              We'd love to personalize your experience. What should we call you?
+            </Text>
+            <View style={styles.nameInputContainer}>
+              <TextInput
+                style={[styles.nameInput, { fontFamily: 'Geist' }]}
+                placeholder="First name"
+                placeholderTextColor="#8E8E93"
+                value={onboardingData.firstName}
+                onChangeText={(text) => setOnboardingData({...onboardingData, firstName: text})}
+                autoCapitalize="words"
+                autoCorrect={false}
+                maxLength={30}
+              />
+              <TextInput
+                style={[styles.nameInput, { fontFamily: 'Geist', marginTop: 12 }]}
+                placeholder="Last name (optional)"
+                placeholderTextColor="#8E8E93"
+                value={onboardingData.lastName}
+                onChangeText={(text) => setOnboardingData({...onboardingData, lastName: text})}
+                autoCapitalize="words"
+                autoCorrect={false}
+                maxLength={30}
+              />
+            </View>
+          </View>
+        );
+
+      case 3:
+        return (
+          <View style={styles.stepContainer}>
             <Text style={[styles.stepTitle, { fontFamily: 'Geist-Bold' }]}>Dietary Preferences 🥗</Text>
             <Text style={[styles.stepDescription, { fontFamily: 'Geist' }]}>
               Any dietary restrictions or preferences we should know about?
@@ -229,7 +285,7 @@ const RefinedWelcomeOnboarding: React.FC<RefinedWelcomeOnboardingProps> = ({ onC
           </View>
         );
 
-      case 3:
+      case 4:
         return (
           <View style={styles.stepContainer}>
             <Text style={[styles.stepTitle, { fontFamily: 'Geist-Bold' }]}>Cooking Preferences 👨‍🍳</Text>
@@ -260,7 +316,7 @@ const RefinedWelcomeOnboarding: React.FC<RefinedWelcomeOnboardingProps> = ({ onC
           </View>
         );
 
-      case 4:
+      case 5:
         return (
           <View style={styles.stepContainer}>
             <Text style={[styles.stepTitle, { fontFamily: 'Geist-Bold' }]}>Energy & Instructions ⚡</Text>
@@ -320,15 +376,15 @@ const RefinedWelcomeOnboarding: React.FC<RefinedWelcomeOnboardingProps> = ({ onC
           </View>
         );
 
-      case 5:
+      case 6:
         return (
           <View style={styles.stepContainer}>
-            <Text style={[styles.stepTitle, { fontFamily: 'Geist-Bold' }]}>Kitchen Tools 🍳</Text>
+            <Text style={[styles.stepTitle, { fontFamily: 'Geist-Bold' }]}>Kitchen Tools & Appliances 🍳</Text>
             <Text style={[styles.stepDescription, { fontFamily: 'Geist' }]}>
-              What cooking equipment do you have available?
+              What cooking equipment and tools do you have available? This helps us recommend recipes you can actually make.
             </Text>
             <View style={styles.optionsGrid}>
-              {['Stovetop', 'Oven', 'Microwave', 'Air Fryer', 'Slow Cooker', 'Instant Pot', 'Blender', 'Food Processor'].map(item => (
+              {['Stovetop', 'Oven', 'Microwave', 'Air Fryer', 'Slow Cooker', 'Instant Pot', 'Blender', 'Food Processor', 'Stand Mixer', 'Hand Mixer', 'Toaster', 'Grill', 'Rice Cooker', 'Pressure Cooker', 'Immersion Blender', 'Coffee Maker'].map(item => (
                 <TouchableOpacity
                   key={item}
                   style={[
@@ -342,6 +398,68 @@ const RefinedWelcomeOnboarding: React.FC<RefinedWelcomeOnboardingProps> = ({ onC
                   <Text style={[
                     styles.optionChipText,
                     onboardingData.kitchenTools.includes(item) && styles.optionChipTextSelected,
+                  ]}>
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        );
+
+      case 7:
+        return (
+          <View style={styles.stepContainer}>
+            <Text style={[styles.stepTitle, { fontFamily: 'Geist-Bold' }]}>Accessibility Preferences ♿</Text>
+            <Text style={[styles.stepDescription, { fontFamily: 'Geist' }]}>
+              Help us create recipes and cooking instructions that work best for your needs.
+            </Text>
+            <View style={styles.optionsGrid}>
+              {['Visual Impairment Support', 'Large Text Instructions', 'Audio Recipe Reading', 'Limited Mobility Adaptations', 'One-Handed Techniques', 'Voice Commands Preferred', 'Simple Step Instructions', 'Extra Time Needed'].map(item => (
+                <TouchableOpacity
+                  key={item}
+                  style={[
+                    styles.optionChip,
+                    onboardingData.accessibilityNeeds.includes(item) && styles.optionChipSelected,
+                  ]}
+                  onPress={() => toggleArrayItem(onboardingData.accessibilityNeeds, item, (items) => 
+                    setOnboardingData({...onboardingData, accessibilityNeeds: items})
+                  )}
+                >
+                  <Text style={[
+                    styles.optionChipText,
+                    onboardingData.accessibilityNeeds.includes(item) && styles.optionChipTextSelected,
+                  ]}>
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        );
+
+      case 8:
+        return (
+          <View style={styles.stepContainer}>
+            <Text style={[styles.stepTitle, { fontFamily: 'Geist-Bold' }]}>Favorite Cuisines 🌍</Text>
+            <Text style={[styles.stepDescription, { fontFamily: 'Geist' }]}>
+              What types of cuisine do you enjoy? This helps us recommend recipes you'll love.
+            </Text>
+            <View style={styles.optionsGrid}>
+              {['Italian', 'Mexican', 'Chinese', 'Japanese', 'Indian', 'Thai', 'American', 'Mediterranean', 'French', 'Korean', 'Vietnamese', 'Middle Eastern'].map(item => (
+                <TouchableOpacity
+                  key={item}
+                  style={[
+                    styles.optionChip,
+                    onboardingData.favoriteCuisines.includes(item) && styles.optionChipSelected,
+                  ]}
+                  onPress={() => toggleArrayItem(onboardingData.favoriteCuisines, item, (items) => 
+                    setOnboardingData({...onboardingData, favoriteCuisines: items})
+                  )}
+                >
+                  <Text style={[
+                    styles.optionChipText,
+                    onboardingData.favoriteCuisines.includes(item) && styles.optionChipTextSelected,
                   ]}>
                     {item}
                   </Text>
@@ -370,17 +488,15 @@ const RefinedWelcomeOnboarding: React.FC<RefinedWelcomeOnboardingProps> = ({ onC
           {isEditing ? 'Edit Your Profile' : 'Complete Your Profile'}
         </Text>
         
-        {/* Progress Indicator */}
+        {/* Progress Bar */}
         <View style={styles.progressContainer}>
-          {[1, 2, 3, 4, 5].map((step) => (
-            <View
-              key={step}
-              style={[
-                styles.progressDot,
-                currentStep >= step && styles.progressDotActive,
-              ]}
-            />
-          ))}
+          <Progress
+            value={(currentStep / 8) * 100}
+            style={styles.progressBar}
+          />
+          <Text style={[styles.progressText, { fontFamily: 'Geist-Medium' }]}>
+            {currentStep} of 8
+          </Text>
         </View>
       </View>
 
@@ -420,7 +536,7 @@ const RefinedWelcomeOnboarding: React.FC<RefinedWelcomeOnboardingProps> = ({ onC
             !canProceed() && styles.nextButtonTextDisabled,
             { fontFamily: 'Geist-SemiBold' }
           ]}>
-            {currentStep === 5 ? (isEditing ? 'Update Profile' : 'Complete Setup') : 'Next'}
+            {currentStep === 8 ? (isEditing ? 'Update Profile' : 'Complete Setup') : 'Next'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -457,19 +573,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   progressContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 8,
   },
-  progressDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.neutral.mediumGray,
-    marginHorizontal: 4,
+  progressBar: {
+    width: '80%',
+    height: 6,
+    marginBottom: 8,
   },
-  progressDotActive: {
-    backgroundColor: Colors.primary.orange,
+  progressText: {
+    fontSize: 14,
+    color: Colors.text.secondary,
   },
   content: {
     flex: 1,
@@ -519,6 +633,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.text.primary,
     fontWeight: '500',
+  },
+  nameInputContainer: {
+    marginTop: 20,
+    paddingHorizontal: 4,
+  },
+  nameInput: {
+    backgroundColor: Colors.background.accent,
+    borderWidth: 1,
+    borderColor: Colors.neutral.mediumGray,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: Colors.text.primary,
   },
   optionsGrid: {
     flexDirection: 'row',

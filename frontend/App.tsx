@@ -38,9 +38,45 @@ const Home: React.FC<HomeProps> = ({ onUserLogout }) => {
   useEffect(() => {
     const checkProfileSetup = async () => {
       if (user && !profileSetupChecked) {
-        const hasCompleted = await UserStorage.hasCompletedProfileSetup();
-        setShowProfileSetup(!hasCompleted);
-        setProfileSetupChecked(true);
+        try {
+          // Import the Auth0 management hook function to get Auth0 profile
+          const { useAuth0Management } = await import('./src/services/Auth0ManagementService');
+          
+          // We need to access the Auth0 management service
+          // For now, let's use a simpler approach - check Auth0 user metadata directly
+          console.log('🔍 Checking Auth0 user metadata for profile completion...');
+          
+          // Check if Auth0 user has firstName in metadata
+          const hasAuth0Profile = user.user_metadata && 
+            user.user_metadata.firstName && 
+            user.user_metadata.firstName.trim().length > 0;
+
+          const localCompleted = await UserStorage.hasCompletedProfileSetup();
+          
+          console.log('📋 Profile completion check:', {
+            localCompleted,
+            hasAuth0Profile,
+            userMetadata: user.user_metadata
+          });
+
+          // If local says completed but Auth0 doesn't have profile data, reset and show onboarding
+          if (localCompleted && !hasAuth0Profile) {
+            console.log('⚠️  Local storage shows complete but Auth0 profile is missing. Resetting and showing onboarding...');
+            await UserStorage.resetProfileSetup();
+            setShowProfileSetup(true);
+          } else {
+            // Use the Auth0 profile status as the source of truth
+            setShowProfileSetup(!hasAuth0Profile);
+          }
+          
+          setProfileSetupChecked(true);
+        } catch (error) {
+          console.error('❌ Error checking profile setup:', error);
+          // Fallback to local storage check
+          const hasCompleted = await UserStorage.hasCompletedProfileSetup();
+          setShowProfileSetup(!hasCompleted);
+          setProfileSetupChecked(true);
+        }
       }
     };
     

@@ -5,17 +5,23 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styles from '../css/HomeScreen.styles';
 import RecipeCard from '../components/RecipeCard';
 import { CreateRecipeButton } from '../components/RecipeModal';
+import LLMInput from '../components/LLMInput';
 import { Recipe, RecipeModel } from '../types/Recipe';
 import { useThemeStyles } from '../hooks/useThemeStyles';
 import RecipeDetailScreen from './RecipeDetailScreen';
+import { useAuth0Profile } from '../services/Auth0Service';
+import { useAuth0Management } from '../services/Auth0ManagementService';
 
 const HomeScreen: React.FC = () => {
   const { user, clearSession } = useAuth0();
   const { colors } = useThemeStyles();
   const insets = useSafeAreaInsets();
+  const { getUserProfile } = useAuth0Profile();
+  const { getUserProfile: getAuth0Profile } = useAuth0Management();
   
   // Recipe navigation state
   const [currentRecipeUrl, setCurrentRecipeUrl] = useState<string | null>(null);
+  const [userFirstName, setUserFirstName] = useState<string | null>(null);
   
   // Modal state for cross-platform alerts
   const [modalVisible, setModalVisible] = useState(false);
@@ -37,6 +43,78 @@ const HomeScreen: React.FC = () => {
       ]).start();
     }
   }, [modalVisible]);
+
+  // Fetch user profile to get firstName
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        console.log('🔍 Fetching user profile for firstName...');
+        console.log('👤 Full Auth0 user object:', JSON.stringify(user, null, 2));
+        console.log('👤 User metadata specifically:', user.user_metadata);
+        console.log('👤 Available user properties:', Object.keys(user));
+        
+        try {
+          // Try Management API first (more reliable for user_metadata)
+          const auth0Profile = await getAuth0Profile();
+          console.log('📋 Retrieved profile from Auth0 Management API:', auth0Profile);
+          
+          if (auth0Profile?.firstName) {
+            console.log('✅ Found firstName in Management API profile:', auth0Profile.firstName);
+            setUserFirstName(auth0Profile.firstName);
+            return;
+          }
+          
+          // Fallback to regular service
+          const profile = await getUserProfile();
+          console.log('📋 Retrieved profile from Auth0 Service:', profile);
+          
+          if (profile?.firstName) {
+            console.log('✅ Found firstName in service profile:', profile.firstName);
+            setUserFirstName(profile.firstName);
+            return;
+          }
+        } catch (error) {
+          console.log('❌ Error fetching user profile:', error);
+        }
+        
+        // Try different ways to access user_metadata
+        console.log('🔍 Checking various user_metadata access patterns...');
+        
+        // Method 1: Direct user_metadata
+        if (user.user_metadata?.firstName) {
+          console.log('✅ Found firstName in user.user_metadata:', user.user_metadata.firstName);
+          setUserFirstName(user.user_metadata.firstName);
+          return;
+        }
+        
+        // Method 2: Check if it's under a different property
+        if (user['https://myapp.example.com/user_metadata']?.firstName) {
+          console.log('✅ Found firstName in custom claim:', user['https://myapp.example.com/user_metadata'].firstName);
+          setUserFirstName(user['https://myapp.example.com/user_metadata'].firstName);
+          return;
+        }
+        
+        // Method 3: Check raw user object for any firstName
+        if (user.firstName) {
+          console.log('✅ Found firstName directly in user object:', user.firstName);
+          setUserFirstName(user.firstName);
+          return;
+        }
+        
+        // Fallback to Auth0 given_name (avoid name/nickname which might be email)
+        if (user?.given_name && !user.given_name.includes('@')) {
+          console.log('✅ Using Auth0 given_name:', user.given_name);
+          setUserFirstName(user.given_name);
+          return;
+        }
+        
+        console.log('⚠️ No valid firstName found, using default');
+        setUserFirstName(null);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user, getUserProfile]);
 
   const showModal = (title: string, message: string, onConfirm?: () => void) => {
     setModalTitle(title);
@@ -103,6 +181,19 @@ const HomeScreen: React.FC = () => {
     setCurrentRecipeUrl(null);
   };
 
+  const handleLLMMessage = (message: string) => {
+    console.log('User message:', message);
+    // TODO: Process the LLM message and generate recipe
+    // For now, we'll just navigate to a recipe screen with the message as a URL
+    setCurrentRecipeUrl(`llm-query:${message}`);
+  };
+
+  const handleMicrophonePress = () => {
+    console.log('Microphone pressed');
+    // TODO: Implement voice input functionality
+    showModal('Voice Input', 'Voice input functionality coming soon!');
+  };
+
   // If we have a recipe URL, show the RecipeDetailScreen
   if (currentRecipeUrl) {
     return (
@@ -115,27 +206,27 @@ const HomeScreen: React.FC = () => {
 
   return (
     <>
-    <ScrollView
-      style={[
-        styles.container,
-        { paddingTop: insets.top, backgroundColor: colors.background }
-      ]}
-    >
-      {/* Welcome Section */}
-      <View style={styles.welcomeSection}>
-        <Text style={[
-          styles.welcomeText,
-          { fontFamily: 'Geist-SemiBold', color: colors.text }
-        ]}>
-          Welcome back, {user?.given_name || user?.name || user?.nickname || 'Chef'}! 👋
-        </Text>
-        <Text style={[
-          styles.welcomeSubtext,
-          { fontFamily: 'Geist', color: colors.textSecondary }
-        ]}>
-          What delicious creation are we making today?
-        </Text>
-      </View>
+      <ScrollView
+        style={[
+          styles.container,
+          { paddingTop: insets.top, backgroundColor: colors.background }
+        ]}
+      >
+        {/* Welcome Section */}
+        <View style={styles.welcomeSection}>
+          <Text style={[
+            styles.welcomeText,
+            { fontFamily: 'Geist-SemiBold', color: colors.text }
+          ]}>
+            Welcome back, {userFirstName || (user?.given_name && !user.given_name.includes('@') ? user.given_name : null) || 'Chef'}! 👋
+          </Text>
+          <Text style={[
+            styles.welcomeSubtext,
+            { fontFamily: 'Geist', color: colors.textSecondary }
+          ]}>
+            What delicious creation are we making today?
+          </Text>
+        </View>
 
       {/* Main Action Section */}
       {!hasGeneratedRecipes ? (
@@ -144,20 +235,30 @@ const HomeScreen: React.FC = () => {
             <Text style={styles.emptyStateIcon}>🍳</Text>
             <Text style={styles.emptyStateTitle}>Ready to cook something amazing?</Text>
             <Text style={styles.emptyStateDescription}>
-              Let's create your first personalized recipe based on your preferences and dietary needs.
+              Tell me what you're craving or share a recipe URL!
             </Text>
-            <CreateRecipeButton
-              buttonStyle={styles.createRecipeButton}
-              textStyle={styles.createRecipeButtonText}
-              onRecipeCreate={handleRecipeCreate}
-            />
+            <View style={styles.llmInputContainer}>
+              <LLMInput
+                placeholder="I want to make pasta with chicken..."
+                onSend={handleLLMMessage}
+                onMicrophonePress={handleMicrophonePress}
+              />
+            </View>
           </View>
         </View>
       ) : (
         <View style={styles.recipesSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Recipes</Text>
-            <CreateRecipeButton variant="link" textStyle={styles.createNewText} onRecipeCreate={handleRecipeCreate} />
+          </View>
+          
+          {/* LLM Input for existing users */}
+          <View style={[styles.llmInputContainer, { paddingHorizontal: 20, marginBottom: 16 }]}>
+            <LLMInput
+              placeholder="Create another recipe or ask for cooking tips..."
+              onSend={handleLLMMessage}
+              onMicrophonePress={handleMicrophonePress}
+            />
           </View>
           
           {recentRecipes.slice(0, 3).map((recipe) => (
@@ -171,43 +272,7 @@ const HomeScreen: React.FC = () => {
         </View>
       )}
 
-      {/* Quick Actions */}
-      <View style={styles.quickActionsSection}>
-        <Text style={[styles.sectionTitle, { fontFamily: 'Geist-SemiBold' }]}>Quick Actions</Text>
-        <View style={styles.quickActionsGrid}>
-          <TouchableOpacity
-            style={styles.quickActionCard}
-            onPress={() => handleQuickAction('Random Recipe')}
-          >
-            <Text style={styles.quickActionIcon}>🎲</Text>
-            <Text style={[styles.quickActionText, { fontFamily: 'Geist-Medium' }]}>Random Recipe</Text>
-          </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.quickActionCard}
-            onPress={() => handleQuickAction('Meal Planner')}
-          >
-            <Text style={styles.quickActionIcon}>📅</Text>
-            <Text style={[styles.quickActionText, { fontFamily: 'Geist-Medium' }]}>Meal Planner</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.quickActionCard}
-            onPress={() => handleQuickAction('Grocery List')}
-          >
-            <Text style={styles.quickActionIcon}>🛒</Text>
-            <Text style={[styles.quickActionText, { fontFamily: 'Geist-Medium' }]}>Grocery List</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.quickActionCard}
-            onPress={() => handleQuickAction('Kitchen Timer')}
-          >
-            <Text style={styles.quickActionIcon}>⏰</Text>
-            <Text style={[styles.quickActionText, { fontFamily: 'Geist-Medium' }]}>Kitchen Timer</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
 
       {/* Today's Tip */}
       <View style={styles.tipSection}>

@@ -58,5 +58,63 @@ export const UserStorage = {
     } catch (error) {
       console.error('Error saving user profile locally:', error);
     }
+  },
+
+  // Validate if profile completion is accurate by checking Auth0 metadata
+  // Returns an object with validation result and auth0Profile data
+  async validateProfileCompletion(getUserProfileFromAuth0: () => Promise<UserProfile | null>): Promise<{
+    isValid: boolean;
+    shouldShowOnboarding: boolean;
+    auth0Profile: UserProfile | null;
+  }> {
+    try {
+      const localCompleted = await this.hasCompletedProfileSetup();
+      console.log('📋 Local profile setup completed:', localCompleted);
+
+      // Get Auth0 profile data
+      const auth0Profile = await getUserProfileFromAuth0();
+      console.log('🔍 Auth0 profile data:', auth0Profile);
+
+      // If local storage says completed but Auth0 profile is missing or incomplete, reset local storage
+      if (localCompleted) {
+        const hasRequiredAuth0Data = auth0Profile && 
+          auth0Profile.firstName && 
+          auth0Profile.firstName.trim().length > 0;
+
+        if (!hasRequiredAuth0Data) {
+          console.log('⚠️  Local storage says complete but Auth0 profile is missing/incomplete. Resetting local storage...');
+          await this.resetProfileSetup();
+          return {
+            isValid: false,
+            shouldShowOnboarding: true,
+            auth0Profile: auth0Profile
+          };
+        }
+
+        // Both local and Auth0 show completion
+        return {
+          isValid: true,
+          shouldShowOnboarding: false,
+          auth0Profile: auth0Profile
+        };
+      }
+
+      // Local storage says not completed
+      return {
+        isValid: true,
+        shouldShowOnboarding: true,
+        auth0Profile: auth0Profile
+      };
+
+    } catch (error) {
+      console.error('❌ Error validating profile completion:', error);
+      // On error, fall back to local storage check
+      const localCompleted = await this.hasCompletedProfileSetup();
+      return {
+        isValid: false,
+        shouldShowOnboarding: !localCompleted,
+        auth0Profile: null
+      };
+    }
   }
 };

@@ -24,7 +24,11 @@ export const useAuth0Profile = () => {
     }
 
     // Auth0 stores custom data in user_metadata or app_metadata
-    const metadata = user['https://a11yum.com/user_metadata'] || {};
+    // Try multiple access patterns for user_metadata
+    const metadata = user.user_metadata || user['https://a11yum.com/user_metadata'] || user['user_metadata'] || {};
+    
+    console.log('🔍 Auth0Service - Full user object:', JSON.stringify(user, null, 2));
+    console.log('🔍 Auth0Service - Extracted metadata:', metadata);
     
     return {
       firstName: metadata.firstName || user.given_name,

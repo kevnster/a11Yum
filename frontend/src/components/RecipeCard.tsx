@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
-import { Recipe } from '../types/Recipe';
+import { Recipe, RecipeModel } from '../types/Recipe';
 import styles from '../css/RecipeCard.styles';
 
 interface RecipeCardProps {
@@ -12,6 +12,8 @@ interface RecipeCardProps {
 }
 
 const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onPress, onFavoritePress }) => {
+  const recipeModel = new RecipeModel(recipe);
+  
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <Card style={styles.card}>
@@ -45,19 +47,19 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onPress, onFavoritePres
           <View style={styles.infoRow}>
             <View style={styles.timeContainer}>
               <Text style={styles.timeIcon}>⏱️</Text>
-              <Text style={styles.timeText}>{recipe.getTimeDisplay()}</Text>
+              <Text style={styles.timeText}>{recipeModel.getTimeDisplay()}</Text>
             </View>
             
             <Badge 
               variant="secondary" 
               style={[
                 styles.difficultyBadge, 
-                { backgroundColor: `${recipe.getDifficultyColor()}20` }
+                { backgroundColor: `${recipeModel.getDifficultyColor()}20` }
               ]}
             >
               <Text style={[
                 styles.difficultyText, 
-                { color: recipe.getDifficultyColor() }
+                { color: recipeModel.getDifficultyColor() }
               ]}>
                 {recipe.difficulty}
               </Text>

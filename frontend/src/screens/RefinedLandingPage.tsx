@@ -11,6 +11,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import Colors from '../constants/Colors';
+import { FeaturesCarousel } from '../components/FeaturesCarousel';
 
 const { width, height } = Dimensions.get('window');
 
@@ -20,10 +21,12 @@ interface RefinedLandingPageProps {
 
 const RefinedLandingPage: React.FC<RefinedLandingPageProps> = ({ onGetStarted }) => {
   const [currentText, setCurrentText] = useState('a11Yum');
+  const [currentSlide, setCurrentSlide] = useState(0);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     // Initial animations
@@ -138,39 +141,39 @@ const RefinedLandingPage: React.FC<RefinedLandingPageProps> = ({ onGetStarted })
         >
           <Text style={[styles.sectionTitle, { fontFamily: 'Geist-SemiBold' }]}>Why Choose a11Yum?</Text>
 
-          <View style={styles.featuresGrid}>
-            <View style={styles.featureCard}>
-              <Text style={styles.featureIcon}>♿</Text>
-              <Text style={[styles.featureTitle, { fontFamily: 'Geist-SemiBold' }]}>Accessible</Text>
-              <Text style={[styles.featureDescription, { fontFamily: 'Geist' }]}>
-                Designed with accessibility in mind for all users
-              </Text>
-            </View>
-
-            <View style={styles.featureCard}>
-              <Text style={styles.featureIcon}>🍳</Text>
-              <Text style={[styles.featureTitle, { fontFamily: 'Geist-SemiBold' }]}>Personalized</Text>
-              <Text style={[styles.featureDescription, { fontFamily: 'Geist' }]}>
-                Recipes tailored to your specific needs and preferences
-              </Text>
-            </View>
-
-            <View style={styles.featureCard}>
-              <Text style={styles.featureIcon}>⚡</Text>
-              <Text style={[styles.featureTitle, { fontFamily: 'Geist-SemiBold' }]}>Quick</Text>
-              <Text style={[styles.featureDescription, { fontFamily: 'Geist' }]}>
-                Generate recipes in seconds, not minutes
-              </Text>
-            </View>
-
-            <View style={styles.featureCard}>
-              <Text style={styles.featureIcon}>🎯</Text>
-              <Text style={[styles.featureTitle, { fontFamily: 'Geist-SemiBold' }]}>Smart</Text>
-              <Text style={[styles.featureDescription, { fontFamily: 'Geist' }]}>
-                AI-powered recommendations based on your profile
-              </Text>
-            </View>
-          </View>
+          <FeaturesCarousel
+            showDescriptions={true}
+            features={[
+              {
+                id: '1',
+                title: 'Accessible',
+                icon: '♿',
+                description: 'Designed with accessibility in mind for all users',
+                onPress: () => console.log('Accessible feature'),
+              },
+              {
+                id: '2',
+                title: 'Personalized',
+                icon: '🍳',
+                description: 'Recipes tailored to your specific needs and preferences',
+                onPress: () => console.log('Personalized feature'),
+              },
+              {
+                id: '3',
+                title: 'Quick',
+                icon: '⚡',
+                description: 'Generate recipes in seconds, not minutes',
+                onPress: () => console.log('Quick feature'),
+              },
+              {
+                id: '4',
+                title: 'Smart',
+                icon: '🎯',
+                description: 'AI-powered recommendations based on your profile',
+                onPress: () => console.log('Smart feature'),
+              },
+            ]}
+          />
         </Animated.View>
 
         {/* CTA Section */}

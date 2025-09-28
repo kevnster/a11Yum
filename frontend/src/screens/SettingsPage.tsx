@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useColorScheme, Alert } from 'react-native';
 import { useAuth0 } from 'react-native-auth0';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Label } from '../../components/ui/label';
+import { Switch } from '../../components/ui/switch';
 import * as Haptics from 'expo-haptics';
 import styles from '../css/SettingsPage.styles';
 
@@ -161,9 +161,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
                 <View style={styles.settingInfo}>
                   <Label 
                     nativeID={item.id} 
-                    htmlFor={item.id}
-                    style={[styles.settingLabel, isDarkMode && styles.darkText]}
-                    onPress={item.onToggle}
+                    style={[styles.settingLabel, isDarkMode ? styles.darkText : {}]}
                   >
                     {item.label}
                   </Label>
