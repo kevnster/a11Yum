@@ -21,6 +21,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.text.secondary,
   },
+  logoSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  animatedLogo: {
+    width: 200,
+    height: 200,
+    borderRadius: 20,
+  },
   emptyStateSection: {
     padding: 20,
   },

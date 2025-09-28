@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Animated, Image } from 'react-native';
 import { useAuth0 } from 'react-native-auth0';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styles from '../css/HomeScreen.styles';
@@ -296,11 +296,19 @@ const HomeScreen: React.FC = () => {
           </Text>
         </View>
 
+      {/* Animated Logo Section */}
+      <View style={styles.logoSection}>
+        <Image 
+          source={require('../../assets/animated_logo.gif')} 
+          style={styles.animatedLogo}
+          resizeMode="contain"
+        />
+      </View>
+
       {/* Main Action Section */}
       {!hasGeneratedRecipes ? (
         <View style={styles.emptyStateSection}>
           <View style={styles.emptyStateCard}>
-            <Text style={styles.emptyStateIcon}>🍳</Text>
             <Text style={styles.emptyStateTitle}>Ready to cook something amazing?</Text>
             <Text style={styles.emptyStateDescription}>
               Tell me what you're craving or share a recipe URL!

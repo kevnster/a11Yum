@@ -14,6 +14,7 @@ import { UserStorage } from './src/utils/UserStorage';
 import { SavedRecipesProvider } from './src/contexts/SavedRecipesContext';
 import { NavigationProvider } from './src/contexts/NavigationContext';
 import { RecentRecipesProvider } from './src/contexts/RecentRecipesContext';
+import { ShoppingListProvider } from './src/contexts/ShoppingListContext';
 
 interface User {
   name?: string;
@@ -241,7 +242,9 @@ const App: React.FC = () => {
           <NavigationProvider>
             <SavedRecipesProvider>
               <RecentRecipesProvider>
-                <AppContent onUserLogout={() => setUserLoggedOut(true)} />
+                <ShoppingListProvider>
+                  <AppContent onUserLogout={() => setUserLoggedOut(true)} />
+                </ShoppingListProvider>
               </RecentRecipesProvider>
             </SavedRecipesProvider>
           </NavigationProvider>

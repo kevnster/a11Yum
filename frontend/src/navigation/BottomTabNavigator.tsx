@@ -8,6 +8,7 @@ import { useNavigation as useReactNavigation } from '@react-navigation/native';
 // Import screens
 import HomeScreen from '../screens/HomeScreen';
 import SavedRecipesScreen from '../screens/SavedRecipesScreen';
+import ShoppingListScreen from '../screens/ShoppingListScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 // Wrapper components that handle dynamic headers
@@ -26,7 +27,7 @@ const HomeWrapper: React.FC = () => {
     navigation.setOptions({
       headerTitle: isShowingRecipe && currentRecipeTitle 
         ? (currentRecipeTitle.length > 20 ? currentRecipeTitle.substring(0, 20) + '...' : currentRecipeTitle)
-        : 'a11Yum',
+        : 'Home',
       headerLeft: isShowingRecipe && goBackFromRecipe 
         ? () => (
             <TouchableOpacity 
@@ -93,6 +94,8 @@ const TabIcon = ({ name, color, size, focused }: { name: string; color: string; 
         return '🏠';
       case 'heart':
         return '❤️';
+      case 'shopping':
+        return '🛒';
       case 'settings':
         return '⚙️';
       default:
@@ -130,6 +133,8 @@ const BottomTabNavigator = () => {
             iconName = 'home';
           } else if (route.name === 'SavedRecipes') {
             iconName = 'heart';
+          } else if (route.name === 'ShoppingList') {
+            iconName = 'shopping';
           } else if (route.name === 'Settings') {
             iconName = 'settings';
           } else {
@@ -181,6 +186,14 @@ const BottomTabNavigator = () => {
         options={{
           title: 'Saved',
           headerTitle: 'Saved Recipes',
+        }}
+      />
+      <Tab.Screen 
+        name="ShoppingList" 
+        component={ShoppingListScreen}
+        options={{
+          title: 'Grocery List',
+          headerTitle: 'Shopping Lists',
         }}
       />
       <Tab.Screen 
