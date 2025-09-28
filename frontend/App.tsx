@@ -9,7 +9,7 @@ import { useThemeStyles } from './src/hooks/useThemeStyles';
 import BottomTabNavigator from './src/navigation/BottomTabNavigator';
 import HomeScreen from './src/screens/HomeScreen';
 import RefinedWelcomeOnboarding from './src/screens/RefinedWelcomeOnboarding';
-import RefinedLandingPage from './src/screens/RefinedLandingPage';
+import LandingPage from './src/screens/LandingPage';
 import { UserStorage } from './src/utils/UserStorage';
 import { SavedRecipesProvider } from './src/contexts/SavedRecipesContext';
 import { NavigationProvider } from './src/contexts/NavigationContext';
@@ -204,7 +204,7 @@ const Home: React.FC<HomeProps> = ({ onUserLogout }) => {
 
   // If user has explicitly logged out, always show landing page
   if (userLoggedOut) {
-    return <RefinedLandingPage onGetStarted={onLogin} />;
+    return <LandingPage onGetStarted={onLogin} />;
   }
 
   // If user is logged in, check if they need onboarding
@@ -226,7 +226,7 @@ const Home: React.FC<HomeProps> = ({ onUserLogout }) => {
 
   // Show landing page for non-logged-in users
   return (
-    <RefinedLandingPage onGetStarted={onLogin} />
+    <LandingPage onGetStarted={onLogin} />
   );
 };
 
