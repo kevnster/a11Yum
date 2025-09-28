@@ -1,4 +1,4 @@
-import { Recipe } from '../types/Recipe';
+import { Recipe, RecipeModel, Ingredient, Tool, RecipeStep } from '../types/Recipe';
 
 export interface GeminiResponse {
   type: 'recipe' | 'url_parsing';
@@ -88,23 +88,53 @@ export class GeminiService {
   }
 
   /**
-   * Parses a recipe URL and extracts recipe data using Gemini AI
+   * Parses a recipe URL and extracts recipe data using FastAPI backend
    * @param url - Recipe URL to parse
    * @param userProfile - User's accessibility needs and preferences
    * @returns Promise<GeminiResponse>
    */
   static async parseRecipeFromUrl(url: string, userProfile?: any): Promise<GeminiResponse> {
     try {
-      const prompt = this.buildUrlParsingPrompt(url, userProfile);
+      console.log('🔍 Scraping recipe from URL:', url);
       
-      // Placeholder response - replace with actual API call
-      const mockResponse = await this.getMockUrlParseResponse(url);
-      
-      return {
-        type: 'url_parsing',
-        recipe: mockResponse,
-        success: true
-      };
+      // Call your FastAPI backend
+      const response = await fetch('http://127.0.0.1:8000/scrape-recipe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: url,
+          session_id: `recipe_scrape_${Date.now()}`,
+          user_id: userProfile?.userId || 'anonymous_user'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('📄 Backend response:', data);
+
+      if (data.success && data.recipe_data) {
+        // Transform backend response to match your frontend Recipe type
+        const recipe: Recipe = this.transformBackendRecipe(data.recipe_data, url);
+        
+        return {
+          type: 'url_parsing',
+          recipe: recipe,
+          success: true
+        };
+      } else {
+        console.error('❌ Backend returned error:', data.error);
+        return {
+          type: 'url_parsing',
+          recipe: {} as Recipe,
+          success: false,
+          error: data.error || 'Failed to scrape recipe'
+        };
+      }
       
     } catch (error) {
       console.error('Error parsing recipe from URL:', error);
@@ -112,9 +142,141 @@ export class GeminiService {
         type: 'url_parsing',
         recipe: {} as Recipe,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error: error instanceof Error ? error.message : 'Network error occurred'
       };
     }
+  }
+
+  /**
+   * Transform backend recipe data to frontend Recipe format
+   * @param backendData - Recipe data from FastAPI backend
+   * @param sourceUrl - Original URL
+   * @returns Recipe - Transformed recipe object
+   */
+  private static transformBackendRecipe(backendData: any, sourceUrl: string): Recipe {
+    try {
+      // Handle both the full structured recipe and fallback data
+      if (backendData.extraction_method === 'text_analysis') {
+        // Fallback case - create basic recipe from raw content
+        return {
+          id: backendData.id || `recipe-${Date.now()}`,
+          title: backendData.name || 'Scraped Recipe',
+          description: backendData.description || 'Recipe extracted from URL',
+          estimatedTime: 30, // Default
+          difficulty: 'Medium' as const,
+          dietaryTags: [],
+          accessibilityTags: ['URL-Scraped'],
+          ingredients: [],
+          tools: [],
+          steps: [],
+          servings: 4, // Default
+          sourceUrl: sourceUrl,
+          createdAt: new Date(),
+          isFavorite: false,
+        } as Recipe;
+      }
+
+      // Full structured recipe
+      return {
+        id: backendData.id || `recipe-${Date.now()}`,
+        title: backendData.title || backendData.name || 'Scraped Recipe',
+        description: backendData.description || '',
+        estimatedTime: backendData.estimatedTime || backendData.totalTime || 30,
+        difficulty: backendData.difficulty || 'Medium',
+        dietaryTags: backendData.dietaryTags || backendData.tags || [],
+        accessibilityTags: backendData.accessibilityTags || ['No-Chop Options', 'Alternative Methods'],
+        ingredients: this.transformIngredients(backendData.ingredients || []),
+        tools: this.transformTools(backendData.tools || []),
+        steps: this.transformSteps(backendData.steps || []),
+        servings: backendData.servings || 4,
+        sourceUrl: sourceUrl,
+        nutritionInfo: backendData.nutritionInfo || backendData.nutritionPerServing,
+        createdAt: new Date(),
+        isFavorite: false,
+      } as Recipe;
+    } catch (error) {
+      console.error('Error transforming backend recipe:', error);
+      // Return minimal recipe on error
+      return {
+        id: `recipe-${Date.now()}`,
+        title: 'Recipe Extraction Error',
+        description: 'There was an error processing this recipe',
+        estimatedTime: 30,
+        difficulty: 'Medium' as const,
+        dietaryTags: [],
+        accessibilityTags: [],
+        ingredients: [],
+        tools: [],
+        steps: [],
+        servings: 4,
+        sourceUrl: sourceUrl,
+        createdAt: new Date(),
+        isFavorite: false,
+      } as Recipe;
+    }
+  }
+
+  /**
+   * Transform backend ingredients to frontend format
+   */
+  private static transformIngredients(backendIngredients: any[]): Ingredient[] {
+    return backendIngredients.map((ing, index) => ({
+      id: ing.id || `ing-${index + 1}`,
+      name: ing.name || '',
+      amount: ing.amount?.toString() || '',
+      unit: ing.unit || '',
+      notes: ing.notes || '',
+      alternatives: ing.alternatives?.map((alt: any, altIndex: number) => ({
+        id: alt.id || `alt-${index}-${altIndex}`,
+        name: alt.name || '',
+        amount: alt.amount?.toString() || '',
+        unit: alt.unit || '',
+        reason: alt.reason || '',
+        accessibilityBenefit: alt.accessibilityBenefit || ''
+      })) || []
+    }));
+  }
+
+  /**
+   * Transform backend tools to frontend format
+   */
+  private static transformTools(backendTools: any[]): Tool[] {
+    return backendTools.map((tool, index) => ({
+      id: tool.id || `tool-${index + 1}`,
+      name: tool.name || '',
+      required: tool.required !== false, // Default to true if not specified
+      safetyNotes: tool.safetyNotes || [],
+      alternatives: tool.alternatives?.map((alt: any, altIndex: number) => ({
+        id: alt.id || `tool-alt-${index}-${altIndex}`,
+        name: alt.name || '',
+        reason: alt.reason || '',
+        accessibilityBenefit: alt.accessibilityBenefit || ''
+      })) || []
+    }));
+  }
+
+  /**
+   * Transform backend steps to frontend format
+   */
+  private static transformSteps(backendSteps: any[]): RecipeStep[] {
+    return backendSteps.map((step, index) => ({
+      id: step.id || `step-${index + 1}`,
+      stepNumber: step.stepNumber || index + 1,
+      instruction: step.instruction || '',
+      estimatedTime: step.estimatedTime || 5,
+      difficulty: step.difficulty || 'Easy',
+      safetyWarnings: step.safetyWarnings || [],
+      requiredTools: step.requiredTools || [],
+      tips: step.tips || [],
+      alternatives: step.alternatives?.map((alt: any, altIndex: number) => ({
+        id: alt.id || `step-alt-${index}-${altIndex}`,
+        instruction: alt.instruction || '',
+        reason: alt.reason || '',
+        accessibilityBenefit: alt.accessibilityBenefit || '',
+        toolChanges: alt.toolChanges || {},
+        timeAdjustment: alt.timeAdjustment || 0
+      })) || []
+    }));
   }
 
   /**

@@ -149,8 +149,25 @@ export const LLMInput: React.FC<LLMInputProps> = ({
         </View>
       </Animated.View>
 
+      {/* Loading indicator text */}
+      {loading && (
+        <View style={styles.loadingIndicator}>
+          <ActivityIndicator size="small" color={colors.primary || '#FF6B35'} />
+          <Text
+            style={[
+              styles.loadingText,
+              {
+                color: colors.primary || '#FF6B35',
+              },
+            ]}
+          >
+            Agent is thinking...
+          </Text>
+        </View>
+      )}
+
       {/* Character count */}
-      {isFocused && (
+      {isFocused && !loading && (
         <View style={styles.characterCount}>
           <Text
             style={[
@@ -248,6 +265,18 @@ const styles = StyleSheet.create({
   },
   characterCountText: {
     fontSize: 12,
+  },
+  loadingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    paddingVertical: 4,
+  },
+  loadingText: {
+    fontSize: 14,
+    marginLeft: 8,
+    fontWeight: '500',
   },
   // Icon styles
   iconContainer: {
