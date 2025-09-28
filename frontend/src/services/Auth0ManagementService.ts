@@ -1,5 +1,6 @@
 import { useAuth0 } from 'react-native-auth0';
 import { UserProfile } from './Auth0Service';
+import { Recipe } from '../types/Recipe';
 
 // Auth0 Management API configuration
 const AUTH0_DOMAIN = 'dev-jhskl14nw5eonveg.us.auth0.com';
@@ -9,19 +10,28 @@ const MANAGEMENT_API_AUDIENCE = `https://${AUTH0_DOMAIN}/api/v2/`;
 const MANAGEMENT_CLIENT_ID = 'qtnrl9hS8FVSFqCxngFlRuG5210Qg7Kr';
 const MANAGEMENT_CLIENT_SECRET = 'VqT5D3DBYcHLCPayCRnUFjElOinxWNnmrUATk8dKM6OHBQeHpBtYbbmhzupm699T';
 
+// Token caching to prevent rate limits
+interface TokenCache {
+  token: string;
+  expiresAt: number;
+}
+
+let tokenCache: TokenCache | null = null;
+
 export const useAuth0Management = () => {
   const { user } = useAuth0();
 
-  // Get Management API access token using Client Credentials flow
+  // Get Management API access token using Client Credentials flow with caching
   const getManagementToken = async (): Promise<string | null> => {
     try {
-      console.log('🔄 Requesting management token with client credentials...');
-      console.log('📋 Using credentials:', {
-        client_id: MANAGEMENT_CLIENT_ID,
-        audience: MANAGEMENT_API_AUDIENCE,
-        domain: AUTH0_DOMAIN,
-        hasSecret: !!MANAGEMENT_CLIENT_SECRET
-      });
+      // Check if we have a valid cached token
+      const now = Date.now();
+      if (tokenCache && tokenCache.expiresAt > now) {
+        console.log('🎯 Using cached management token');
+        return tokenCache.token;
+      }
+
+      console.log('🔄 Requesting new management token with client credentials...');
       
       const requestBody = {
         client_id: MANAGEMENT_CLIENT_ID,
@@ -29,8 +39,6 @@ export const useAuth0Management = () => {
         audience: MANAGEMENT_API_AUDIENCE,
         grant_type: 'client_credentials'
       };
-
-      console.log('📤 Token request body:', JSON.stringify(requestBody, null, 2));
       
       const response = await fetch(`https://${AUTH0_DOMAIN}/oauth/token`, {
         method: 'POST',
@@ -44,8 +52,15 @@ export const useAuth0Management = () => {
 
       if (response.ok) {
         const tokenData = await response.json();
-        console.log('✅ Got management token successfully');
-        console.log('🔍 Token scopes:', tokenData.scope);
+        
+        // Cache the token (Auth0 tokens typically expire in 24 hours, we'll cache for 23 hours)
+        const expiresIn = tokenData.expires_in || 86400; // Default to 24 hours
+        tokenCache = {
+          token: tokenData.access_token,
+          expiresAt: now + (expiresIn - 3600) * 1000 // Refresh 1 hour before expiry
+        };
+        
+        console.log('✅ Got and cached management token successfully');
         return tokenData.access_token;
       } else {
         const error = await response.text();
@@ -54,6 +69,12 @@ export const useAuth0Management = () => {
           statusText: response.statusText,
           error: error
         });
+        
+        // If rate limited, return null and let the app handle gracefully
+        if (response.status === 429) {
+          console.log('⚠️ Rate limited - using local fallback if available');
+        }
+        
         return null;
       }
     } catch (error) {
@@ -274,8 +295,120 @@ export const useAuth0Management = () => {
     }
   };
 
+  // Save saved recipes to Auth0 user_metadata
+  const saveSavedRecipes = async (savedRecipes: Recipe[]): Promise<boolean> => {
+    if (!user) {
+      console.error('❌ No user found');
+      return false;
+    }
+
+    try {
+      console.log('🔄 Saving saved recipes to Auth0...');
+      console.log('📋 Number of recipes to save:', savedRecipes.length);
+      
+      const token = await getManagementToken();
+      if (!token) {
+        console.error('❌ Could not get management token');
+        return false;
+      }
+
+      // Save only the essential recipe data to minimize metadata size
+      const recipesToSave = savedRecipes.map(recipe => ({
+        id: recipe.id,
+        title: recipe.title,
+        description: recipe.description,
+        estimatedTime: recipe.estimatedTime,
+        difficulty: recipe.difficulty,
+        dietaryTags: recipe.dietaryTags,
+        accessibilityTags: recipe.accessibilityTags || [],
+        servings: recipe.servings,
+        isFavorite: recipe.isFavorite,
+        createdAt: recipe.createdAt,
+        // Include ingredients and steps for full recipe functionality
+        ingredients: recipe.ingredients,
+        tools: recipe.tools,
+        steps: recipe.steps
+      }));
+
+      const requestBody = {
+        user_metadata: {
+          savedRecipes: recipesToSave,
+          savedRecipesUpdatedAt: new Date().toISOString()
+        }
+      };
+      
+      console.log('📤 Making PATCH request to save recipes...');
+      
+      const response = await fetch(`https://${AUTH0_DOMAIN}/api/v2/users/${user.sub}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (response.ok) {
+        console.log('✅ Saved recipes updated in Auth0 successfully!');
+        return true;
+      } else {
+        const error = await response.text();
+        console.error('❌ Error saving recipes to Auth0:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: error
+        });
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Error saving recipes:', error);
+      return false;
+    }
+  };
+
+  // Get saved recipes from Auth0 user_metadata
+  const getSavedRecipes = async (): Promise<Recipe[]> => {
+    try {
+      if (!user?.sub) {
+        return [];
+      }
+
+      const token = await getManagementToken();
+      if (!token) {
+        return [];
+      }
+
+      const response = await fetch(`https://${AUTH0_DOMAIN}/api/v2/users/${user.sub}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        const metadata = userData.user_metadata || {};
+        
+        console.log('📥 Retrieved saved recipes from Auth0:', metadata.savedRecipes?.length || 0, 'recipes');
+        
+        return metadata.savedRecipes || [];
+      } else {
+        const error = await response.text();
+        console.error('❌ Error fetching saved recipes from Auth0:', {
+          status: response.status,
+          error: error
+        });
+        return [];
+      }
+    } catch (error) {
+      console.error('❌ Error getting saved recipes:', error);
+      return [];
+    }
+  };
+
   return {
     saveUserProfile,
     getUserProfile,
+    saveSavedRecipes,
+    getSavedRecipes,
   };
 };

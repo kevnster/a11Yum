@@ -1,42 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import Colors from '../constants/Colors';
 import RecipeCard from '../components/RecipeCard';
 import styles from '../css/SavedRecipesScreen.styles';
 import { Recipe, RecipeModel } from '../types/Recipe';
+import { useSavedRecipes } from '../contexts/SavedRecipesContext';
+import RecipeDetailScreen from './RecipeDetailScreen';
 
 const SavedRecipesScreen: React.FC = () => {
-  // Mock saved recipes data
-  const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([
-    new RecipeModel({
-      title: 'Creamy Mushroom Risotto',
-      description: 'Rich and creamy Italian risotto with assorted mushrooms and parmesan cheese',
-      estimatedTime: 45,
-      difficulty: 'Medium',
-      dietaryTags: ['Vegetarian', 'Gluten-Free'],
-      servings: 4,
-      isFavorite: true,
-    }),
-    new RecipeModel({
-      title: 'Quinoa Buddha Bowl',
-      description: 'Nutritious bowl with quinoa, roasted vegetables, and tahini dressing',
-      estimatedTime: 30,
-      difficulty: 'Easy',
-      dietaryTags: ['Vegan', 'Gluten-Free', 'High-Protein'],
-      servings: 2,
-      isFavorite: true,
-    }),
-    new RecipeModel({
-      title: 'Spicy Thai Curry',
-      description: 'Aromatic coconut curry with vegetables and your choice of protein',
-      estimatedTime: 35,
-      difficulty: 'Medium',
-      dietaryTags: ['Dairy-Free', 'Spicy'],
-      servings: 4,
-      isFavorite: true,
-    }),
-  ]);
+  const { savedRecipes, toggleFavorite, isLoading } = useSavedRecipes();
 
+  // Recipe navigation state
+  const [currentRecipeUrl, setCurrentRecipeUrl] = useState<string | null>(null);
+  const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
   const [filterTag, setFilterTag] = useState<string | null>(null);
 
   // Get all unique dietary tags from saved recipes
@@ -50,24 +26,34 @@ const SavedRecipesScreen: React.FC = () => {
     : savedRecipes;
 
   const handleRecipePress = (recipe: Recipe) => {
-    Alert.alert(
-      recipe.title,
-      `${recipe.description}\n\nTime: ${recipe.getTimeDisplay()}\nDifficulty: ${recipe.difficulty}\nServings: ${recipe.servings}`,
-      [
-        { text: 'Close' },
-        { text: 'View Recipe', onPress: () => console.log('View recipe:', recipe.id) }
-      ]
-    );
+    console.log('🔄 Navigating to saved recipe:', recipe.title);
+    setCurrentRecipe(recipe);
+    setCurrentRecipeUrl(`saved:${recipe.id}`);
   };
 
-  const handleFavoritePress = (recipeId: string) => {
-    setSavedRecipes(prev => 
-      prev.map(recipe => 
-        recipe.id === recipeId 
-          ? { ...recipe, isFavorite: !recipe.isFavorite }
-          : recipe
-      ).filter(recipe => recipe.isFavorite) // Remove from saved if unfavorited
-    );
+  const handleBackToSaved = () => {
+    setCurrentRecipeUrl(null);
+    setCurrentRecipe(null);
+  };
+
+    const handleFavoritePress = (recipeId: string) => {
+    const recipe = savedRecipes.find(r => r.id === recipeId);
+    if (recipe) {
+      Alert.alert(
+        'Remove from Saved',
+        'Are you sure you want to remove this recipe from your saved recipes?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Remove',
+            style: 'destructive',
+            onPress: () => {
+              toggleFavorite(recipe);
+            },
+          },
+        ]
+      );
+    }
   };
 
   const handleFilterPress = (tag: string) => {
@@ -75,6 +61,16 @@ const SavedRecipesScreen: React.FC = () => {
   };
 
   const hasSavedRecipes = savedRecipes.length > 0;
+
+  // If we have a recipe selected, show the RecipeDetailScreen
+  if (currentRecipeUrl && currentRecipe) {
+    return (
+      <RecipeDetailScreen 
+        route={{ params: { url: currentRecipeUrl, recipe: currentRecipe } }} 
+        navigation={{ goBack: handleBackToSaved }}
+      />
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -142,6 +138,12 @@ const SavedRecipesScreen: React.FC = () => {
             ))}
           </View>
         </>
+      ) : isLoading ? (
+        /* Loading State */
+        <View style={styles.emptyStateContainer}>
+          <ActivityIndicator size="large" color={Colors.primary.orange} />
+          <Text style={[styles.emptyStateTitle, { marginTop: 16 }]}>Loading your saved recipes...</Text>
+        </View>
       ) : (
         /* Empty State */
         <View style={styles.emptyStateContainer}>

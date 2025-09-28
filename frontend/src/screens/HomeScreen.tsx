@@ -12,6 +12,7 @@ import RecipeDetailScreen from './RecipeDetailScreen';
 import { useAuth0Profile } from '../services/Auth0Service';
 import { useAuth0Management } from '../services/Auth0ManagementService';
 import GeminiService from '../services/GeminiService';
+import { useSavedRecipes } from '../contexts/SavedRecipesContext';
 
 const HomeScreen: React.FC = () => {
   const { user, clearSession } = useAuth0();
@@ -19,6 +20,7 @@ const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { getUserProfile } = useAuth0Profile();
   const { getUserProfile: getAuth0Profile } = useAuth0Management();
+  const { savedRecipes: contextSavedRecipes, toggleFavorite } = useSavedRecipes();
   
   // Recipe navigation state
   const [currentRecipeUrl, setCurrentRecipeUrl] = useState<string | null>(null);
@@ -148,38 +150,21 @@ const HomeScreen: React.FC = () => {
     });
   };
   
-  // Mock data - replace with actual recipe storage later
-  const [recentRecipes, setRecentRecipes] = useState<Recipe[]>([
-    // Example recipe for testing
-    // new RecipeModel({
-    //   title: 'Easy Pasta Carbonara',
-    //   description: 'A classic Italian pasta dish with eggs, cheese, and pancetta',
-    //   estimatedTime: 25,
-    //   difficulty: 'Easy',
-    //   dietaryTags: ['Vegetarian-Friendly'],
-    //   servings: 4,
-    //   isFavorite: true,
-    // })
-  ]);
-
+  // Use context for saved recipes
+  const recentRecipes = contextSavedRecipes.slice(0, 3); // Show only recent 3
   const hasGeneratedRecipes = recentRecipes.length > 0;
 
   const handleRecipePress = (recipe: Recipe) => {
-    const recipeModel = new RecipeModel(recipe);
-    showModal(
-      recipe.title,
-      `Estimated time: ${recipeModel.getTimeDisplay()}\nDifficulty: ${recipe.difficulty}`
-    );
+    console.log('🔄 Navigating to recipe:', recipe.title);
+    setCurrentRecipe(recipe);
+    setCurrentRecipeUrl(`saved:${recipe.id}`);
   };
 
   const handleFavoritePress = (recipeId: string) => {
-    setRecentRecipes(prev => 
-      prev.map(recipe => 
-        recipe.id === recipeId 
-          ? { ...recipe, isFavorite: !recipe.isFavorite }
-          : recipe
-      )
-    );
+    const recipe = contextSavedRecipes.find(r => r.id === recipeId);
+    if (recipe) {
+      toggleFavorite(recipe);
+    }
   };
 
   const handleQuickAction = (action: string) => {
@@ -295,10 +280,6 @@ const HomeScreen: React.FC = () => {
         </View>
       ) : (
         <View style={styles.recipesSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Recipes</Text>
-          </View>
-          
           {/* LLM Input for existing users */}
           <View style={[styles.llmInputContainer, { paddingHorizontal: 20, marginBottom: 16 }]}>
             <LLMInput
@@ -307,6 +288,10 @@ const HomeScreen: React.FC = () => {
               onMicrophonePress={handleMicrophonePress}
               loading={isProcessingRecipe}
             />
+          </View>
+          
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Recipes</Text>
           </View>
           
           {recentRecipes.slice(0, 3).map((recipe) => (

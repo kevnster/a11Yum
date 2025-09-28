@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeStyles } from '../hooks/useThemeStyles';
 import { Recipe, RecipeStep, Ingredient, Tool, StepAlternative } from '../types/Recipe';
+import { useSavedRecipes } from '../contexts/SavedRecipesContext';
 
 interface RecipeDetailScreenProps {
   route: {
@@ -176,6 +177,7 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route, navigati
   const { url, recipe } = route.params;
   const { colors } = useThemeStyles();
   const insets = useSafeAreaInsets();
+  const { toggleFavorite, isRecipeSaved, savedRecipes } = useSavedRecipes();
   
   // Use passed recipe or mock data
   const [currentRecipe, setCurrentRecipe] = useState<Recipe>(recipe || mockRecipe);
@@ -188,6 +190,14 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route, navigati
       setIsLoading(false);
     }
   }, [recipe]);
+
+  // Sync recipe favorite status with saved recipes context
+  useEffect(() => {
+    const isSaved = savedRecipes.some(r => r.id === currentRecipe.id);
+    if (currentRecipe.isFavorite !== isSaved) {
+      setCurrentRecipe(prev => ({ ...prev, isFavorite: isSaved }));
+    }
+  }, [currentRecipe.id, savedRecipes]);
 
   const handleAlternativeSelect = (stepId: string, alternativeId: string) => {
     const step = currentRecipe.steps.find(s => s.id === stepId);
@@ -234,12 +244,16 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route, navigati
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+      <View style={[styles.header, { paddingTop: insets.top - 10, backgroundColor: colors.background }]}>
         <TouchableOpacity style={styles.backArrow} onPress={() => navigation.goBack()}>
           <Text style={[styles.backArrowText, { color: colors.text }]}>←</Text>
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Recipe</Text>
-        <TouchableOpacity onPress={() => setCurrentRecipe(prev => ({ ...prev, isFavorite: !prev.isFavorite }))}>
+        <TouchableOpacity onPress={() => {
+          console.log('🔄 Heart button pressed for recipe:', currentRecipe.title, 'Current favorite status:', currentRecipe.isFavorite);
+          // Pass the current recipe to toggleFavorite - the context will handle the state update
+          toggleFavorite(currentRecipe);
+        }}>
           <Text style={styles.favoriteIcon}>{currentRecipe.isFavorite ? '❤️' : '🤍'}</Text>
         </TouchableOpacity>
       </View>

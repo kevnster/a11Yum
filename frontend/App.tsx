@@ -11,6 +11,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import RefinedWelcomeOnboarding from './src/screens/RefinedWelcomeOnboarding';
 import RefinedLandingPage from './src/screens/RefinedLandingPage';
 import { UserStorage } from './src/utils/UserStorage';
+import { SavedRecipesProvider } from './src/contexts/SavedRecipesContext';
 
 interface User {
   name?: string;
@@ -235,7 +236,9 @@ const App: React.FC = () => {
         domain={config.domain}
         clientId={config.clientId}
         >
-          <AppContent onUserLogout={() => setUserLoggedOut(true)} />
+          <SavedRecipesProvider>
+            <AppContent onUserLogout={() => setUserLoggedOut(true)} />
+          </SavedRecipesProvider>
           <PortalHost />
         </Auth0Provider>
     </SafeAreaProvider>
