@@ -148,12 +148,12 @@ const SettingsScreen: React.FC = () => {
       <View style={[styles.profileSection, { backgroundColor: colors.card }]}>
         <View style={styles.avatarContainer}>
           <Text style={styles.avatarText}>
-            {(user?.given_name || user?.name || user?.nickname || 'User').charAt(0).toUpperCase()}
+            {(user?.given_name && !user.given_name.includes('@') ? user.given_name : user?.name?.split(' ')[0] || 'User').charAt(0).toUpperCase()}
           </Text>
         </View>
         <View style={styles.userInfo}>
           <Text style={[styles.userName, { fontFamily: 'Geist-SemiBold', color: colors.text }]}>
-            {user?.given_name || user?.name || user?.nickname || 'User'}
+            {user?.given_name && !user.given_name.includes('@') ? user.given_name : user?.name?.split(' ')[0] || 'User'}
           </Text>
           <Text style={[styles.userEmail, { fontFamily: 'Geist', color: colors.textSecondary }]}>
             {user?.email || 'user@example.com'}

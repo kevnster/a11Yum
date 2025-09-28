@@ -48,10 +48,6 @@ const HomeScreen: React.FC = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (user) {
-        console.log('🔍 Fetching user profile for firstName...');
-        console.log('👤 Full Auth0 user object:', JSON.stringify(user, null, 2));
-        console.log('👤 User metadata specifically:', user.user_metadata);
-        console.log('👤 Available user properties:', Object.keys(user));
         
         try {
           // Try Management API first (more reliable for user_metadata)
@@ -218,7 +214,7 @@ const HomeScreen: React.FC = () => {
             styles.welcomeText,
             { fontFamily: 'Geist-SemiBold', color: colors.text }
           ]}>
-            Welcome back, {userFirstName || (user?.given_name && !user.given_name.includes('@') ? user.given_name : null) || 'Chef'}! 👋
+            Welcome back, {user?.given_name && !user.given_name.includes('@') ? user.given_name : user?.name?.split(' ')[0] || 'Chef'}! 👋
           </Text>
           <Text style={[
             styles.welcomeSubtext,
