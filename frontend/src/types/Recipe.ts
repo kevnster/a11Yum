@@ -1,3 +1,61 @@
+// Enhanced interfaces for accessibility-aware recipes
+export interface Ingredient {
+  id: string;
+  name: string;
+  amount: string;
+  unit?: string;
+  notes?: string;
+  alternatives?: IngredientAlternative[];
+}
+
+export interface IngredientAlternative {
+  id: string;
+  name: string;
+  amount: string;
+  unit?: string;
+  reason: string; // Why this is an alternative (e.g., "Pre-chopped option", "Allergy-friendly")
+  accessibilityBenefit?: string; // e.g., "No chopping required", "Easier to handle"
+}
+
+export interface Tool {
+  id: string;
+  name: string;
+  required: boolean;
+  alternatives?: ToolAlternative[];
+  safetyNotes?: string[];
+}
+
+export interface ToolAlternative {
+  id: string;
+  name: string;
+  reason: string;
+  accessibilityBenefit?: string;
+}
+
+export interface RecipeStep {
+  id: string;
+  stepNumber: number;
+  instruction: string;
+  estimatedTime?: number; // in minutes
+  difficulty?: 'Easy' | 'Medium' | 'Hard';
+  safetyWarnings?: string[];
+  alternatives?: StepAlternative[];
+  requiredTools?: string[]; // Tool IDs
+  tips?: string[];
+}
+
+export interface StepAlternative {
+  id: string;
+  instruction: string;
+  reason: string; // Why this is an alternative
+  accessibilityBenefit?: string; // Specific accessibility benefit
+  toolChanges?: { // Tools that need to be added/removed
+    add?: string[];
+    remove?: string[];
+  };
+  timeAdjustment?: number; // Time difference in minutes
+}
+
 export interface Recipe {
   id: string;
   title: string;
@@ -5,12 +63,21 @@ export interface Recipe {
   estimatedTime: number; // in minutes
   difficulty: 'Easy' | 'Medium' | 'Hard';
   dietaryTags: string[]; // e.g., ['Vegan', 'Gluten-Free']
-  ingredients: string[];
-  instructions: string[];
+  accessibilityTags: string[]; // e.g., ['No-Chop', 'One-Pot', 'No-Hot-Surfaces']
+  ingredients: Ingredient[];
+  tools: Tool[];
+  steps: RecipeStep[];
   servings: number;
   imageUrl?: string;
   createdAt: Date;
   isFavorite: boolean;
+  nutritionInfo?: {
+    calories?: number;
+    protein?: string;
+    carbs?: string;
+    fat?: string;
+  };
+  sourceUrl?: string; // Original recipe URL if parsed from web
 }
 
 export class RecipeModel implements Recipe {
@@ -20,12 +87,21 @@ export class RecipeModel implements Recipe {
   estimatedTime: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   dietaryTags: string[];
-  ingredients: string[];
-  instructions: string[];
+  accessibilityTags: string[];
+  ingredients: Ingredient[];
+  tools: Tool[];
+  steps: RecipeStep[];
   servings: number;
   imageUrl?: string;
   createdAt: Date;
   isFavorite: boolean;
+  nutritionInfo?: {
+    calories?: number;
+    protein?: string;
+    carbs?: string;
+    fat?: string;
+  };
+  sourceUrl?: string;
 
   constructor(data: Partial<Recipe>) {
     this.id = data.id || Math.random().toString(36).substr(2, 9);
@@ -34,12 +110,16 @@ export class RecipeModel implements Recipe {
     this.estimatedTime = data.estimatedTime || 30;
     this.difficulty = data.difficulty || 'Medium';
     this.dietaryTags = data.dietaryTags || [];
+    this.accessibilityTags = data.accessibilityTags || [];
     this.ingredients = data.ingredients || [];
-    this.instructions = data.instructions || [];
+    this.tools = data.tools || [];
+    this.steps = data.steps || [];
     this.servings = data.servings || 4;
     this.imageUrl = data.imageUrl;
     this.createdAt = data.createdAt || new Date();
     this.isFavorite = data.isFavorite || false;
+    this.nutritionInfo = data.nutritionInfo;
+    this.sourceUrl = data.sourceUrl;
   }
 
   // Get difficulty color for styling

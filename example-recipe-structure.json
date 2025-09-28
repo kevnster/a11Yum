@@ -1,0 +1,246 @@
+{
+  "id": "recipe-12345",
+  "title": "Accessible Spaghetti Carbonara",
+  "description": "A creamy, delicious pasta dish with accessibility alternatives for every step",
+  "estimatedTime": 25,
+  "difficulty": "Medium",
+  "dietaryTags": ["Vegetarian Option Available", "Contains Dairy", "Contains Eggs"],
+  "accessibilityTags": ["No-Chop Options", "Alternative Cooking Methods", "One-Pot Option"],
+  "servings": 4,
+  "imageUrl": "https://example.com/carbonara.jpg",
+  "sourceUrl": "https://example.com/original-recipe",
+  "nutritionInfo": {
+    "calories": 450,
+    "protein": "18g",
+    "carbs": "52g",
+    "fat": "18g"
+  },
+  "ingredients": [
+    {
+      "id": "ing-1",
+      "name": "Spaghetti pasta",
+      "amount": "400",
+      "unit": "g",
+      "notes": "Long pasta works best",
+      "alternatives": [
+        {
+          "id": "alt-1",
+          "name": "Short pasta (penne, rigatoni)",
+          "amount": "400",
+          "unit": "g",
+          "reason": "Easier to eat for those with motor difficulties",
+          "accessibilityBenefit": "No twirling required, easier to scoop"
+        }
+      ]
+    },
+    {
+      "id": "ing-2",
+      "name": "Bacon",
+      "amount": "200",
+      "unit": "g",
+      "notes": "Diced into small pieces",
+      "alternatives": [
+        {
+          "id": "alt-2",
+          "name": "Pre-diced pancetta",
+          "amount": "200",
+          "unit": "g",
+          "reason": "No chopping required",
+          "accessibilityBenefit": "Eliminates knife work for those with limited mobility"
+        },
+        {
+          "id": "alt-3",
+          "name": "Vegetarian bacon bits",
+          "amount": "100",
+          "unit": "g",
+          "reason": "Vegetarian option, pre-prepared",
+          "accessibilityBenefit": "No chopping, no raw meat handling"
+        }
+      ]
+    },
+    {
+      "id": "ing-3",
+      "name": "Large eggs",
+      "amount": "3",
+      "unit": "whole",
+      "alternatives": [
+        {
+          "id": "alt-4",
+          "name": "Pasteurized liquid eggs",
+          "amount": "150",
+          "unit": "ml",
+          "reason": "No cracking required, safer for immunocompromised",
+          "accessibilityBenefit": "No shell fragments risk, easier to measure"
+        }
+      ]
+    },
+    {
+      "id": "ing-4",
+      "name": "Parmesan cheese",
+      "amount": "100",
+      "unit": "g",
+      "notes": "Freshly grated",
+      "alternatives": [
+        {
+          "id": "alt-5",
+          "name": "Pre-grated Parmesan",
+          "amount": "100",
+          "unit": "g",
+          "reason": "No grating required",
+          "accessibilityBenefit": "Eliminates repetitive hand motion and sharp grater use"
+        }
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "id": "tool-1",
+      "name": "Large pot for pasta",
+      "required": true,
+      "safetyNotes": ["Handle hot water carefully", "Use pot holders"],
+      "alternatives": [
+        {
+          "id": "tool-alt-1",
+          "name": "Electric kettle + large bowl",
+          "reason": "Safer than stovetop boiling",
+          "accessibilityBenefit": "Reduces risk for those with seizure disorders or mobility issues"
+        }
+      ]
+    },
+    {
+      "id": "tool-2",
+      "name": "Large frying pan",
+      "required": true,
+      "alternatives": [
+        {
+          "id": "tool-alt-2",
+          "name": "Microwave-safe dish",
+          "reason": "No stovetop required",
+          "accessibilityBenefit": "Safer for those uncomfortable with open flames or hot surfaces"
+        }
+      ]
+    },
+    {
+      "id": "tool-3",
+      "name": "Sharp knife",
+      "required": false,
+      "safetyNotes": ["Keep fingers away from blade", "Use cutting board"],
+      "alternatives": [
+        {
+          "id": "tool-alt-3",
+          "name": "Kitchen scissors",
+          "reason": "Alternative to knife work",
+          "accessibilityBenefit": "Better grip and control for those with limited hand dexterity"
+        }
+      ]
+    },
+    {
+      "id": "tool-4",
+      "name": "Colander",
+      "required": true
+    }
+  ],
+  "steps": [
+    {
+      "id": "step-1",
+      "stepNumber": 1,
+      "instruction": "Bring a large pot of salted water to boil. Add spaghetti and cook according to package directions until al dente.",
+      "estimatedTime": 10,
+      "difficulty": "Easy",
+      "safetyWarnings": ["Handle boiling water carefully", "Watch for steam"],
+      "requiredTools": ["tool-1"],
+      "alternatives": [
+        {
+          "id": "step-alt-1",
+          "instruction": "Boil water in electric kettle. Place spaghetti in large bowl, pour over boiling water, cover tightly and let sit for 15-18 minutes until tender.",
+          "reason": "Avoids stovetop use",
+          "accessibilityBenefit": "Safer for those with seizure disorders or fear of open flames",
+          "toolChanges": {
+            "add": ["tool-alt-1"],
+            "remove": ["tool-1"]
+          },
+          "timeAdjustment": 8
+        }
+      ],
+      "tips": ["Add salt to water for better flavor", "Stir occasionally to prevent sticking"]
+    },
+    {
+      "id": "step-2",
+      "stepNumber": 2,
+      "instruction": "While pasta cooks, dice the bacon into small pieces and cook in a large frying pan over medium heat until crispy, about 5-6 minutes.",
+      "estimatedTime": 6,
+      "difficulty": "Medium",
+      "safetyWarnings": ["Watch for hot grease splatter", "Keep pan handle turned inward"],
+      "requiredTools": ["tool-2", "tool-3"],
+      "alternatives": [
+        {
+          "id": "step-alt-2",
+          "instruction": "Place pre-diced pancetta in microwave-safe dish and microwave on high for 2-3 minutes until crispy, stirring halfway through.",
+          "reason": "No chopping or stovetop required",
+          "accessibilityBenefit": "Eliminates knife work and hot grease splatter risk",
+          "toolChanges": {
+            "add": ["tool-alt-2"],
+            "remove": ["tool-2", "tool-3"]
+          },
+          "timeAdjustment": -3
+        }
+      ]
+    },
+    {
+      "id": "step-3",
+      "stepNumber": 3,
+      "instruction": "In a mixing bowl, whisk together eggs and grated Parmesan cheese. Season with black pepper.",
+      "estimatedTime": 2,
+      "difficulty": "Easy",
+      "requiredTools": [],
+      "alternatives": [
+        {
+          "id": "step-alt-3",
+          "instruction": "In a mixing bowl, combine liquid eggs and pre-grated Parmesan cheese with a fork. Season with black pepper.",
+          "reason": "No egg cracking or cheese grating required",
+          "accessibilityBenefit": "Eliminates fine motor skills needed for cracking eggs and grating cheese",
+          "timeAdjustment": -1
+        }
+      ]
+    },
+    {
+      "id": "step-4",
+      "stepNumber": 4,
+      "instruction": "Reserve 1 cup pasta cooking water, then drain pasta. Immediately add hot pasta to the pan with bacon.",
+      "estimatedTime": 2,
+      "difficulty": "Easy",
+      "safetyWarnings": ["Handle hot pasta water carefully"],
+      "requiredTools": ["tool-4"],
+      "alternatives": [
+        {
+          "id": "step-alt-4",
+          "instruction": "Carefully pour off most water from pasta bowl, leaving about 1 cup. Use a large spoon to transfer pasta to serving bowl with bacon.",
+          "reason": "Avoids lifting heavy pot",
+          "accessibilityBenefit": "Reduces risk of burns and strain for those with limited strength",
+          "timeAdjustment": 1
+        }
+      ]
+    },
+    {
+      "id": "step-5",
+      "stepNumber": 5,
+      "instruction": "Remove pan from heat. Quickly pour egg mixture over hot pasta, tossing continuously with tongs to create a creamy sauce. Add pasta water as needed.",
+      "estimatedTime": 3,
+      "difficulty": "Hard",
+      "safetyWarnings": ["Work quickly to prevent eggs from scrambling"],
+      "requiredTools": [],
+      "alternatives": [
+        {
+          "id": "step-alt-5",
+          "instruction": "Let pasta cool for 1 minute. Slowly drizzle egg mixture while stirring gently with a large spoon. The residual heat will cook the eggs safely.",
+          "reason": "Reduces risk of scrambling eggs",
+          "accessibilityBenefit": "Less coordination required, safer technique for beginners",
+          "timeAdjustment": 1
+        }
+      ],
+      "tips": ["The key is to work off heat", "If sauce is too thick, add more pasta water"]
+    }
+  ],
+  "createdAt": "2025-09-27T12:00:00Z",
+  "isFavorite": false
+}

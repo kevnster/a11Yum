@@ -8,6 +8,7 @@ import {
   Animated,
   Keyboard,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useThemeStyles } from '../hooks/useThemeStyles';
 
@@ -17,6 +18,7 @@ interface LLMInputProps {
   onMicrophonePress?: () => void;
   disabled?: boolean;
   maxLength?: number;
+  loading?: boolean;
 }
 
 export const LLMInput: React.FC<LLMInputProps> = ({
@@ -25,6 +27,7 @@ export const LLMInput: React.FC<LLMInputProps> = ({
   onMicrophonePress,
   disabled = false,
   maxLength = 500,
+  loading = false,
 }) => {
   const { colors } = useThemeStyles();
   const [inputText, setInputText] = useState('');
@@ -51,7 +54,7 @@ export const LLMInput: React.FC<LLMInputProps> = ({
   };
 
   const handleSend = () => {
-    if (inputText.trim() && onSend) {
+    if (inputText.trim() && onSend && !loading) {
       onSend(inputText.trim());
       setInputText('');
       Keyboard.dismiss();
@@ -114,13 +117,18 @@ export const LLMInput: React.FC<LLMInputProps> = ({
                 styles.sendButton,
                 {
                   backgroundColor: colors.primary || '#FF6B35',
+                  opacity: loading ? 0.7 : 1,
                 },
               ]}
               onPress={handleSend}
-              disabled={disabled}
+              disabled={disabled || loading}
               activeOpacity={0.8}
             >
-              <SendIcon color="white" />
+              {loading ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <SendIcon color="white" />
+              )}
             </TouchableOpacity>
           ) : (
             /* Microphone Button */

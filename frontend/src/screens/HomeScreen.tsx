@@ -11,6 +11,7 @@ import { useThemeStyles } from '../hooks/useThemeStyles';
 import RecipeDetailScreen from './RecipeDetailScreen';
 import { useAuth0Profile } from '../services/Auth0Service';
 import { useAuth0Management } from '../services/Auth0ManagementService';
+import GeminiService from '../services/GeminiService';
 
 const HomeScreen: React.FC = () => {
   const { user, clearSession } = useAuth0();
@@ -21,7 +22,9 @@ const HomeScreen: React.FC = () => {
   
   // Recipe navigation state
   const [currentRecipeUrl, setCurrentRecipeUrl] = useState<string | null>(null);
+  const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
+  const [isProcessingRecipe, setIsProcessingRecipe] = useState(false);
   
   // Modal state for cross-platform alerts
   const [modalVisible, setModalVisible] = useState(false);
@@ -44,26 +47,6 @@ const HomeScreen: React.FC = () => {
     }
   }, [modalVisible]);
 
-  // Helper function to get Management API token
-  const getManagementToken = async (): Promise<string> => {
-    const response = await fetch(`https://dev-jhskl14nw5eonveg.us.auth0.com/oauth/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_id: 'qtnrl9hS8FVSFqCxngFlRuG5210Qg7Kr',
-        client_secret: 'VqT5D3DBYcHLCPayCRnUFjElOinxWNnmrUATk8dKM6OHBQeHpBtYbbmhzupm699T',
-        audience: 'https://dev-jhskl14nw5eonveg.us.auth0.com/api/v2/',
-        grant_type: 'client_credentials'
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to get management token');
-    }
-    
-    const data = await response.json();
-    return data.access_token;
-  };
 
   // Fetch user profile to get firstName
   useEffect(() => {
@@ -209,13 +192,46 @@ const HomeScreen: React.FC = () => {
 
   const handleBackToHome = () => {
     setCurrentRecipeUrl(null);
+    setCurrentRecipe(null);
   };
 
-  const handleLLMMessage = (message: string) => {
+  const handleLLMMessage = async (message: string) => {
     console.log('User message:', message);
-    // TODO: Process the LLM message and generate recipe
-    // For now, we'll just navigate to a recipe screen with the message as a URL
-    setCurrentRecipeUrl(`llm-query:${message}`);
+    setIsProcessingRecipe(true);
+    
+    try {
+      // Analyze if input is URL or text query
+      const analysis = GeminiService.analyzeInput(message);
+      
+      if (analysis.isUrl && analysis.url) {
+        console.log('Processing recipe URL:', analysis.url);
+        // Handle URL parsing
+        const result = await GeminiService.parseRecipeFromUrl(analysis.url);
+        
+        if (result.success) {
+          setCurrentRecipe(result.recipe);
+          setCurrentRecipeUrl(analysis.url);
+        } else {
+          showModal('Error', result.error || 'Failed to parse recipe from URL');
+        }
+      } else {
+        console.log('Generating recipe from query:', message);
+        // Handle text-based recipe generation
+        const result = await GeminiService.generateRecipe(message);
+        
+        if (result.success) {
+          setCurrentRecipe(result.recipe);
+          setCurrentRecipeUrl(`generated:${message}`);
+        } else {
+          showModal('Error', result.error || 'Failed to generate recipe');
+        }
+      }
+    } catch (error) {
+      console.error('Error processing LLM message:', error);
+      showModal('Error', 'Something went wrong while processing your request');
+    } finally {
+      setIsProcessingRecipe(false);
+    }
   };
 
   const handleMicrophonePress = () => {
@@ -224,11 +240,11 @@ const HomeScreen: React.FC = () => {
     showModal('Voice Input', 'Voice input functionality coming soon!');
   };
 
-  // If we have a recipe URL, show the RecipeDetailScreen
-  if (currentRecipeUrl) {
+  // If we have a recipe, show the RecipeDetailScreen
+  if (currentRecipeUrl && (currentRecipe || isProcessingRecipe)) {
     return (
       <RecipeDetailScreen 
-        route={{ params: { url: currentRecipeUrl } }} 
+        route={{ params: { url: currentRecipeUrl, recipe: currentRecipe || undefined } }} 
         navigation={{ goBack: handleBackToHome }}
       />
     );
@@ -239,7 +255,7 @@ const HomeScreen: React.FC = () => {
       <ScrollView
         style={[
           styles.container,
-          { paddingTop: insets.top, backgroundColor: colors.background }
+          { paddingTop: insets.top - 10, backgroundColor: colors.background }
         ]}
       >
         {/* Welcome Section */}
@@ -272,6 +288,7 @@ const HomeScreen: React.FC = () => {
                 placeholder="I want to make pasta with chicken..."
                 onSend={handleLLMMessage}
                 onMicrophonePress={handleMicrophonePress}
+                loading={isProcessingRecipe}
               />
             </View>
           </View>
@@ -288,6 +305,7 @@ const HomeScreen: React.FC = () => {
               placeholder="Create another recipe or ask for cooking tips..."
               onSend={handleLLMMessage}
               onMicrophonePress={handleMicrophonePress}
+              loading={isProcessingRecipe}
             />
           </View>
           

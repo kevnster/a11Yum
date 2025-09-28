@@ -8,7 +8,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background.secondary,
   },
   welcomeSection: {
-    padding: 20,
+    paddingHorizontal: 20,
     paddingBottom: 10,
   },
   welcomeText: {
